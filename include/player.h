@@ -1,0 +1,62 @@
+//Nick Sells, 2021
+//player.h
+
+#ifndef PLAYER
+#define PLAYER
+
+#include <tonc_video.h>
+#include "level.h"
+
+//=============================================================================
+//STRUCTS
+//=============================================================================
+
+typedef struct {
+	POINT16 pos;            //the player's position
+	u8 facing;              //the direction the player is facing
+	u8 move_timer;          //the number of frames left to finish moving
+	u8 move_cooldown;       //the number of frames until you can move again
+} Player;
+
+//=============================================================================
+//DIRECTIONS
+//=============================================================================
+
+#define FACING_UP       1
+#define FACING_DOWN     0
+#define FACING_LEFT     2
+#define FACING_RIGHT    3
+
+//=============================================================================
+//POSITION ON SCREEN
+//=============================================================================
+//the player sprite always stays at this position on-screen
+//you must add these when doing any sort of player location checking
+
+#define PLR_SCREEN_POS_X   	(SCREEN_WIDTH / 2 - 8)
+#define PLR_SCREEN_POS_Y    (SCREEN_HEIGHT / 2 - 16)
+
+//=============================================================================
+//POSITION IN LEVEL
+//=============================================================================
+//these return the player's meta-tile position in the level
+
+#define PLR_GET_X(plr)  (((plr)->pos.x + PLR_SCREEN_POS_X) / 16)
+#define PLR_GET_Y(plr)  (((plr)->pos.y + PLR_SCREEN_POS_Y) / 16)
+
+//=============================================================================
+//MOVEMENT
+//=============================================================================
+
+#define MOVE_COOLDOWN   15  //how long the player must wait to move again
+#define MOVE_FRAMES     8   //how many frames it takes to move one tile
+#define MOVE_INTERVAL   2   //the number of pixels to move each frame
+//NOTE: OPT_MOVE_INTERVAL x OPT_MOVE_FRAMES *must* be equal to 16 or the player desyncs with the grid
+
+//=============================================================================
+//FUNCTIONS
+//=============================================================================
+
+extern void plr_move(Player* plr, const Level* lvl, cu32 bg);
+
+#endif //PLAYER

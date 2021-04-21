@@ -15,6 +15,7 @@ include $(DEVKITARM)/gba_rules
 # the LIBGBA path is defined in gba_rules, but we have to define LIBTONC ourselves
 #---------------------------------------------------------------------------------
 LIBTONC := $(DEVKITPRO)/libtonc
+LIBAAS  := $(DEVKITPRO)/aas
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -30,11 +31,11 @@ LIBTONC := $(DEVKITPRO)/libtonc
 #---------------------------------------------------------------------------------
 TARGET		:= $(notdir $(CURDIR))
 BUILD		:= build
-SOURCES		:= engine/source game/source
-INCLUDES	:= engine/include game/include
-DATA		:= engine/source/data game/source/data
-MUSIC		:= game/audio
-GRAPHICS	:= game/graphics
+SOURCES		:= source
+INCLUDES	:= include
+DATA		:= source/data
+MUSIC		:= audio
+GRAPHICS	:= graphics
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -55,14 +56,14 @@ LDFLAGS	=	-g $(ARCH) -Wl,-Map,$(notdir $*.map)
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lmm -ltonc                                                            #edit
+LIBS	:= -lmm -ltonc -lAAS                                                      #edit
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 # the LIBGBA path should remain in this list if you want to use maxmod            #edit
 #---------------------------------------------------------------------------------
-LIBDIRS	:=	$(LIBGBA) $(LIBTONC)
+LIBDIRS	:=	$(LIBGBA) $(LIBTONC) $(LIBAAS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
