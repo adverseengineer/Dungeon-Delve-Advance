@@ -13,16 +13,16 @@
 //=============================================================================
 
 //the "type" of an animation
-typedef struct {
-	u16* frames;        //obj tid of each frame
-	u8* repeats;        //length of each frame
-	u8* flips;          //which ways to flip each frame
+typedef struct AnimData {
+	u16 frames[16];     //obj tid of each frame
+	u8 repeats[16];     //length of each frame
+	u8 flips[16];       //which ways to flip each frame
 	u8 length;          //number of frames
 	BOOL looped;        //should it play once or loop
 } ALIGN4 AnimData;
 
 //an "instance" of an AnimData
-typedef struct {
+typedef struct Anim {
     const AnimData* data;   //pointer to relevant AnimData
 	u8 frame;               //current frame index within AnimData
     u8 timer;               //remaining ticks until advancing to the next frame

@@ -28,16 +28,29 @@ static inline void lvl_carveHallway(Level* lvl, POINT* p1, POINT* p2);
 
 //allocate all the memory needed for a Level
 Level* lvl_create(cu32 width, cu32 height) {
+	
 	Level* lvl = (Level*) calloc(1, sizeof(Level));
 	lvl->width = width;
 	lvl->height = height;
 	lvl->tiles = (u8*) calloc(1, width * height * sizeof(u8));
+	
+	//allocate the enemy array itself and then the enemies
+	lvl->enemies = (Enemy**) calloc(MAX_ENEMIES, MAX_ENEMIES * sizeof(Enemy*));
+	for(u32 i = 0; i < MAX_ENEMIES; i++)
+		lvl->enemies[i] = (Enemy*) calloc(1, sizeof(Enemy));
+	
 	return lvl;
 }
 
 
 //deallocate the level
 void lvl_destroy(Level* lvl) {
+	
+	//free each enemy and then the array itself
+	for(u32 i = MAX_ENEMIES; i > 0; i--)
+		free(lvl->enemies[i]);
+	
+	free(lvl->enemies);
 	free(lvl->tiles);
 	free(lvl);
 }
@@ -179,9 +192,9 @@ static inline void lvl_padRoom(RECT* rect) {
 		rect->bottom -= pad_b;
 	}
 
-	//NOTE: this prevents any room from touching. this is a temporary fix
-	//until i can figure out how to allow rooms to touch without interfering
-	//with door placement logic
+	//NOTE: this prevents any room from touching. it makes the levels really boring.
+	//this is a temporary fix until i can figure out how to allow rooms to touch
+	//without interfering with door placement logic
 	rect->right--;
 	rect->bottom--;
 }
@@ -265,6 +278,12 @@ static inline void lvl_carveHallway(Level* lvl, POINT* p1, POINT* p2) {
 		}
 	}
 }
+
+// TODO: each room except entrance and exits have a chance to have enemies in them. when
+//generating a room, spawn a random number of enemies in there. dynamically allocate the
+//enemies and add them to the enemy array. the mob cap is 32
+
+// TODO: add support for maps that load on the fly so they can be bigger than 32x32 meta tiles
 
 // TODO: place entries/exits
 // TODO: room types

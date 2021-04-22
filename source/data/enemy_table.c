@@ -5,19 +5,19 @@
 
 const EnemyData enemy_table[16] = {
 	(EnemyData) {
+		name: "Beholder",
+		desc: "A massive eyeball creature that uses psionic powers"
+	},
+	(EnemyData) {
+		name: "Sewer Rat",
+		desc: "A rodent of unusual size."
+	},
+	(EnemyData) {
 		name: "Skeleton",
 		desc: "The reanimated remains of a long-dead adventurer",
 	},
 	(EnemyData) {
-		name: "Goblin",
-		desc: "A vicious little creature with a taste for adventurers",
-	},
-	(EnemyData) {
-		name: "Giant Spider",
-		desc: "A spider the size of a wagon wheel",
-	},
-	(EnemyData) {
-		name: "Slime",
+		name: "Goo",
 		desc: "A sentient mass of who-knows-what",
 	},
 	(EnemyData) {
@@ -27,5 +27,9 @@ const EnemyData enemy_table[16] = {
 	(EnemyData) {
 		name: "Vampire Bat",
 		desc: "A blood-sucking avian terror. Watch the cielings."
-	}
+	},
+	(EnemyData) {
+		name: "Stone Golem",
+		desc: "A stone statue brought to life by dark magic",
+	},
 };

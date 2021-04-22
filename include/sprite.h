@@ -6,14 +6,26 @@
 #ifndef SPRITE
 #define SPRITE
 
+//=============================================================================
+//STRUCTS
+//=============================================================================
+
 //ties together an OAM entry and a pointer to the one with the next highest priority
-typedef struct {
+typedef struct Sprite {
 	OBJ_ATTR obj;
 	OBJ_ATTR* next;
-} Sprite;
+} ALIGN4 Sprite;
+
+//=============================================================================
+//GLOBALS
+//=============================================================================
 
 //used internally only by this module
 static Sprite sprite_buffer[128]; 
+
+//=============================================================================
+//FUNCTIONS
+//=============================================================================
 
 static inline spr_swap(Sprite* spr_a, Sprite* spr_b) {
 	OBJ_ATTR* temp = spr_a->next;

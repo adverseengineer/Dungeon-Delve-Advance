@@ -4,9 +4,12 @@
 #include <tonc.h>
 #include "level.h"
 #include "player.h"
+#include "enemy.h"
 //gfx
 #include "gfx_dungeon.h"
-#include "gfx_player.h"
+#include "gfx_actors.h"
+//data
+#include "data/enemy_table.h"
 
 #define sbb 28
 
@@ -16,21 +19,44 @@ OBJ_ATTR obj_buffer[128];
 int main(void) {
 	GRIT_CPY(tile_mem, gfx_dungeonTiles);
 	GRIT_CPY(pal_bg_mem, gfx_dungeonPal);
-	GRIT_CPY(tile_mem_obj, gfx_playerTiles);
-	GRIT_CPY(pal_obj_mem, gfx_playerPal);
+	GRIT_CPY(tile_mem_obj, gfx_actorsTiles);
+	GRIT_CPY(pal_obj_mem, gfx_actorsPal);
 
 	Player plr = {
-		pos: {0, 0}
+		pos: {-64, -16}
+	};
+
+	Level* lvl = lvl_create(8, 8);
+	lvl->tiles = (u8[]) {
+		1, 1, 1, 1, 1, 1, 1, 1, 
+		1, 2, 2, 2, 2, 2, 2, 1, 
+		1, 2, 1, 2, 2, 1, 2, 1, 
+		1, 2, 2, 2, 2, 2, 2, 1, 
+		1, 2, 2, 2, 2, 2, 2, 1, 
+		1, 2, 1, 2, 2, 1, 2, 1, 
+		1, 2, 2, 2, 2, 2, 2, 1, 
+		1, 1, 1, 1, 1, 1, 1, 1, 
+	};
+
+	Enemy* enm = lvl->enemies[0];
+
+	*enm = (Enemy) {
+		data: ENEMY_BEHOLDER,
+		pos: {-64, 0}
 	};
 
 	//clear the shadow copy to safe values
 	oam_init(obj_buffer, 128);
 
-	OBJ_ATTR* sprite = &obj_buffer[0];
-	obj_set_attr(sprite, ATTR0_SQUARE, ATTR1_SIZE_16, 0);
-	obj_set_pos(sprite, PLR_GET_X(&plr), PLR_GET_Y(&plr));
+	OBJ_ATTR* plr_sprite = &obj_buffer[0];
+	obj_set_attr(plr_sprite, ATTR0_SQUARE, ATTR1_SIZE_16, 0);
+	obj_set_pos(plr_sprite, PLR_SCR_POS_X, PLR_SCR_POS_Y);
 
-	oam_copy(oam_mem, obj_buffer, 1);
+	OBJ_ATTR* enm_sprite = &obj_buffer[1];
+	obj_set_attr(enm_sprite, ATTR0_SQUARE, ATTR1_SIZE_16, 512);
+	obj_set_pos(enm_sprite, PLR_SCR_POS_X + 16, PLR_SCR_POS_Y + 16);
+
+	oam_copy(oam_mem, obj_buffer, 2);
 
 	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_OBJ | DCNT_OBJ_1D;
 	REG_BG0CNT = BG_CBB(0) | BG_SBB(sbb) | BG_REG_64x64;
@@ -38,24 +64,13 @@ int main(void) {
 	irq_init(NULL);
 	irq_enable(II_VBLANK);
 
-	Level* lvl = lvl_create(32, 32);
+	lvl_draw(lvl, sbb);
 
 	while(TRUE) {
 		VBlankIntrWait();
 		key_poll();
 		plr_move(&plr, lvl, 0);
-		if(key_hit(KEY_START)) {
-
-			SBB_CLEAR(sbb);
-			SBB_CLEAR(sbb+1);
-			SBB_CLEAR(sbb+2);
-			SBB_CLEAR(sbb+3);
-			memset32(lvl->tiles, 0, (lvl->width * lvl->height) / 4);
-			RECT original = {1, 1, lvl->width - 1, lvl->height - 1};
-			lvl_carve(lvl, &original, NUM_RECUR);
-			lvl_draw(lvl, sbb);
-		}
+		obj_set_pos(enm_sprite, enm->pos.x, enm->pos.y);
+		oam_copy(&oam_mem[1], &obj_buffer[1], 1);
 	}
-
-	while(TRUE);
 }

@@ -7,16 +7,17 @@
 #include <tonc_video.h>
 #include "level.h"
 
+//TODO: any part of the player struct that doesn;t need to be saved to sram should be a global
+
 //=============================================================================
 //STRUCTS
 //=============================================================================
 
-typedef struct {
+//NOTE: this disgusting forward declaration is to resolve a cyclic dependency
+typedef struct Level Level;
+typedef struct Player {
 	POINT16 pos;            //the player's position
-	u8 facing;              //the direction the player is facing
-	u8 move_timer;          //the number of frames left to finish moving
-	u8 move_cooldown;       //the number of frames until you can move again
-} Player;
+} ALIGN4 Player;
 
 //=============================================================================
 //DIRECTIONS
@@ -33,16 +34,16 @@ typedef struct {
 //the player sprite always stays at this position on-screen
 //you must add these when doing any sort of player location checking
 
-#define PLR_SCREEN_POS_X   	(SCREEN_WIDTH / 2 - 8)
-#define PLR_SCREEN_POS_Y    (SCREEN_HEIGHT / 2 - 16)
+#define PLR_SCR_POS_X   (SCREEN_WIDTH / 2 - 8)
+#define PLR_SCR_POS_Y   (SCREEN_HEIGHT / 2 - 16)
 
 //=============================================================================
 //POSITION IN LEVEL
 //=============================================================================
 //these return the player's meta-tile position in the level
 
-#define PLR_GET_X(plr)  (((plr)->pos.x + PLR_SCREEN_POS_X) / 16)
-#define PLR_GET_Y(plr)  (((plr)->pos.y + PLR_SCREEN_POS_Y) / 16)
+#define PLR_GET_X(plr)  (((plr)->pos.x + PLR_SCR_POS_X) / 16)
+#define PLR_GET_Y(plr)  (((plr)->pos.y + PLR_SCR_POS_Y) / 16)
 
 //=============================================================================
 //MOVEMENT

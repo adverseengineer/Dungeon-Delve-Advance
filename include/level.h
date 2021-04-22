@@ -5,16 +5,20 @@
 #define LEVEL
 
 #include <tonc_math.h>
+#include "enemy.h"
 
 //=============================================================================
 //STRUCTS
 //=============================================================================
 
-typedef struct {
+//NOTE: this filthy forward declaration is to resolve a cyclic dependency
+typedef struct Enemy Enemy;
+typedef struct Level {
 	u8 theme;
 	u8 width;
 	u8 height;
 	u8* tiles;
+	Enemy** enemies;
 } ALIGN4 Level;
 
 //=============================================================================
@@ -26,6 +30,7 @@ typedef struct {
 #define DISCARD_RATIO       (float2fx(0.4))
 #define PADDING_FACTOR      4
 #define MIN_ROOM_SIZE       5
+#define MAX_ENEMIES         32
 
 //=============================================================================
 //LEVEL TYPES
