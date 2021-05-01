@@ -90,29 +90,27 @@ void lvl_carve(Level* lvl, RECT* rect, cu32 iterations) {
 void lvl_draw(const Level* lvl, cu32 sbb) {
 
 	//TODO: where the fuck do i put these?
-	#define SE_NONE         0
-	#define SE_WALL         4
-	#define SE_WALL_ALT     8
-	#define SE_FLOOR        12
-	#define SE_FLOOR_ALT    16
-	#define SE_DOOR_CLOSED  20
-	#define SE_DOOR_OPEN    24
+	#define SE_WALL         0
+	#define SE_WALL_ALT     4
+	#define SE_DOOR_CLOSED  8
+	#define SE_DOOR_OPEN    12
+	#define SE_LADDER_UP    16
+	#define SE_LADDER_DOWN  20
+	#define SE_FLOOR        24
+	#define SE_FLOOR_WATER  28
+	#define SE_PARCH_CORNER 32
+	#define SE_PARCH_VERT   36
+	#define SE_PARCH_HORZ   40
 
 	for(u32 y = 0; y < lvl->height; y++) {
 	for(u32 x = 0; x < lvl->width; x++) {
+		BOOL variant_chance = qran_range(0,16) > 1;
 		switch(LVL_GET_TILE(lvl, x, y)) {
 			case TILE_WALL:
-				se_plot(se_mem[sbb], x * 2, y * 2, SE_WALL);
-				se_plot(se_mem[sbb], x * 2 + 1, y * 2, SE_WALL + 1);
-				se_plot(se_mem[sbb], x * 2, y * 2 + 1, SE_WALL + 2);
-				se_plot(se_mem[sbb], x * 2 + 1, y * 2 + 1, SE_WALL + 3);
-				break;
-			case TILE_FLOOR_ROOM:
-			case TILE_FLOOR_HALL:
-				se_plot(se_mem[sbb], x * 2, y * 2, SE_FLOOR);
-				se_plot(se_mem[sbb], x * 2 + 1, y * 2, SE_FLOOR + 1);
-				se_plot(se_mem[sbb], x * 2, y * 2 + 1, SE_FLOOR + 2);
-				se_plot(se_mem[sbb], x * 2 + 1, y * 2 + 1, SE_FLOOR + 3);
+				se_plot(se_mem[sbb], x * 2, y * 2, (variant_chance ? SE_WALL : SE_WALL_ALT));
+				se_plot(se_mem[sbb], x * 2 + 1, y * 2, (variant_chance ? SE_WALL : SE_WALL_ALT) + 1);
+				se_plot(se_mem[sbb], x * 2, y * 2 + 1, (variant_chance ? SE_WALL : SE_WALL_ALT) + 2);
+				se_plot(se_mem[sbb], x * 2 + 1, y * 2 + 1, (variant_chance ? SE_WALL : SE_WALL_ALT) + 3);
 				break;
 			case TILE_DOOR_CLOSED:
 				se_plot(se_mem[sbb], x * 2, y * 2, SE_DOOR_CLOSED);
@@ -125,6 +123,25 @@ void lvl_draw(const Level* lvl, cu32 sbb) {
 				se_plot(se_mem[sbb], x * 2 + 1, y * 2, SE_DOOR_OPEN + 1);
 				se_plot(se_mem[sbb], x * 2, y * 2 + 1, SE_DOOR_OPEN + 2);
 				se_plot(se_mem[sbb], x * 2 + 1, y * 2 + 1, SE_DOOR_OPEN + 3);
+				break;
+			case TILE_ENTRY:
+				se_plot(se_mem[sbb], x * 2, y * 2, SE_LADDER_UP);
+				se_plot(se_mem[sbb], x * 2 + 1, y * 2, SE_LADDER_UP + 1);
+				se_plot(se_mem[sbb], x * 2, y * 2 + 1, SE_LADDER_UP + 2);
+				se_plot(se_mem[sbb], x * 2 + 1, y * 2 + 1, SE_LADDER_UP + 3);
+				break;
+			case TILE_EXIT:
+				se_plot(se_mem[sbb], x * 2, y * 2, SE_LADDER_DOWN);
+				se_plot(se_mem[sbb], x * 2 + 1, y * 2, SE_LADDER_DOWN + 1);
+				se_plot(se_mem[sbb], x * 2, y * 2 + 1, SE_LADDER_DOWN + 2);
+				se_plot(se_mem[sbb], x * 2 + 1, y * 2 + 1, SE_LADDER_DOWN + 3);
+				break;
+			case TILE_FLOOR_ROOM:
+			case TILE_FLOOR_HALL:
+				se_plot(se_mem[sbb], x * 2, y * 2, SE_FLOOR);
+				se_plot(se_mem[sbb], x * 2 + 1, y * 2, SE_FLOOR + 1);
+				se_plot(se_mem[sbb], x * 2, y * 2 + 1, SE_FLOOR + 2);
+				se_plot(se_mem[sbb], x * 2 + 1, y * 2 + 1, SE_FLOOR + 3);
 				break;
 		}
 	}}

@@ -3,63 +3,60 @@
 #include <AAS.h>
 #include <tonc.h>
 #include "level.h"
+#include "sprite.h"
 #include "player.h"
 #include "enemy.h"
 //gfx
-#include "gfx_dungeon.h"
-#include "gfx_actors.h"
+#include "gfx_tiles.h"
+#include "gfx_sprites.h"
 //data
+#include "data/anim_table.h"
 #include "data/enemy_table.h"
+//libs
+#include "lib/posprintf.h"
 
 #define sbb 28
 
-// a shadow copy of oam
-OBJ_ATTR obj_buffer[128];
-
 int main(void) {
-	GRIT_CPY(tile_mem, gfx_dungeonTiles);
-	GRIT_CPY(pal_bg_mem, gfx_dungeonPal);
-	GRIT_CPY(tile_mem_obj, gfx_actorsTiles);
-	GRIT_CPY(pal_obj_mem, gfx_actorsPal);
+
+	GRIT_CPY(tile_mem, gfx_tilesTiles);
+	GRIT_CPY(pal_bg_mem, gfx_tilesPal);
+	GRIT_CPY(tile_mem_obj, gfx_spritesTiles);
+	GRIT_CPY(pal_obj_mem, gfx_spritesPal);
+
+	pal_bg_mem[2] = CLR_GRAY;
 
 	Player plr = {
 		pos: {-64, -16}
 	};
 
-	Level* lvl = lvl_create(8, 8);
+	Level* lvl = lvl_create(10, 10);
 	lvl->tiles = (u8[]) {
-		1, 1, 1, 1, 1, 1, 1, 1, 
-		1, 2, 2, 2, 2, 2, 2, 1, 
-		1, 2, 1, 2, 2, 1, 2, 1, 
-		1, 2, 2, 2, 2, 2, 2, 1, 
-		1, 2, 2, 2, 2, 2, 2, 1, 
-		1, 2, 1, 2, 2, 1, 2, 1, 
-		1, 2, 2, 2, 2, 2, 2, 1, 
-		1, 1, 1, 1, 1, 1, 1, 1, 
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+		1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+		1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+		1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+		1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+		1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+		1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+		1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	};
 
-	Enemy* enm = lvl->enemies[0];
-
-	*enm = (Enemy) {
+	*lvl->enemies[0] = (Enemy) {
 		data: ENEMY_BEHOLDER,
-		pos: {-64, 0}
+		pos: {0, 0}
 	};
 
-	//clear the shadow copy to safe values
-	oam_init(obj_buffer, 128);
 
-	OBJ_ATTR* plr_sprite = &obj_buffer[0];
-	obj_set_attr(plr_sprite, ATTR0_SQUARE, ATTR1_SIZE_16, 0);
-	obj_set_pos(plr_sprite, PLR_SCR_POS_X, PLR_SCR_POS_Y);
-
-	OBJ_ATTR* enm_sprite = &obj_buffer[1];
-	obj_set_attr(enm_sprite, ATTR0_SQUARE, ATTR1_SIZE_16, 512);
-	obj_set_pos(enm_sprite, PLR_SCR_POS_X + 16, PLR_SCR_POS_Y + 16);
-
-	oam_copy(oam_mem, obj_buffer, 2);
+	//TODO: make a level-coords to screen-coords mapping function 
+	Sprite* plr_sprite = spr_create(plr_scrPosX, plr_scrPosY, 8, ANIM_CACO_IDLE);
+	
+	spr_render();
 
 	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_OBJ | DCNT_OBJ_1D;
-	REG_BG0CNT = BG_CBB(0) | BG_SBB(sbb) | BG_REG_64x64;
+	REG_BG0CNT = BG_CBB(0) | BG_SBB(sbb) | BG_REG_64x64 | BG_8BPP;
 
 	irq_init(NULL);
 	irq_enable(II_VBLANK);
@@ -67,10 +64,23 @@ int main(void) {
 	lvl_draw(lvl, sbb);
 
 	while(TRUE) {
+		Sprite* pSpr = NULL;
+
 		VBlankIntrWait();
 		key_poll();
 		plr_move(&plr, lvl, 0);
-		obj_set_pos(enm_sprite, enm->pos.x, enm->pos.y);
-		oam_copy(&oam_mem[1], &obj_buffer[1], 1);
+		
+		if(key_hit(KEY_A)) {
+			u32 rx = qran_range(0, 225);
+			u32 ry = qran_range(0, 145);
+			pSpr = spr_create(rx, ry, 0, ANIM_BAT_IDLE);
+		}
+
+		if(key_hit(KEY_B)) {
+			spr_destroy(pSpr);
+		}
+
+		spr_animStep(plr_sprite);
+		spr_render();
 	}
 }

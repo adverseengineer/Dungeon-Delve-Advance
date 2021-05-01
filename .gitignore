@@ -1,0 +1,4 @@
+*.elf
+*.sav
+notes/*
+build/*

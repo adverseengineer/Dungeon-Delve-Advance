@@ -9,7 +9,6 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 2,
 	},
 	//ANIM_PLAYER_WALK
@@ -17,7 +16,6 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 4,
 	},
 	//ANIM_PLAYER_ACTION
@@ -25,15 +23,13 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 2,
 	},
 	//ANIM_CACO_IDLE
 	//the beholder levitates and waves its claws
 	(AnimData) {
-		frames: {0},
-		repeats: {0},
-		flips: {0},
+		frames: {8, 12},
+		repeats: {10, 10},
 		length: 2,
 	},
 	//ANIM_RAT_IDLE
@@ -41,7 +37,6 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 2,	
 	},
 	//ANIM_SKEL_WALK
@@ -49,7 +44,6 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 4,
 	},
 	////ANIM_GOO_IDLE
@@ -57,7 +51,6 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 2,
 	},
 	//ANIM_MIMIC_IDLE
@@ -65,7 +58,6 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 2,
 	},
 	//ANIM_MIMIC_CHASE
@@ -73,15 +65,13 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 5,
 	},
 	//ANIM_BAT_IDLE
 	//the bat flaps it's wings
 	(AnimData) {
-		frames: {0},
-		repeats: {0},
-		flips: {0},
+		frames: {0, 4},
+		repeats: {3, 3},
 		length: 2,
 	},
 	//ANIM_GOLEM_WALK
@@ -89,7 +79,6 @@ const AnimData anim_table[32] = {
 	(AnimData) {
 		frames: {0},
 		repeats: {0},
-		flips: {0},
 		length: 4,
 	}
 };

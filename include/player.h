@@ -34,25 +34,25 @@ typedef struct Player {
 //the player sprite always stays at this position on-screen
 //you must add these when doing any sort of player location checking
 
-#define PLR_SCR_POS_X   (SCREEN_WIDTH / 2 - 8)
-#define PLR_SCR_POS_Y   (SCREEN_HEIGHT / 2 - 16)
+#define plr_scrPosX     (SCREEN_WIDTH / 2 - 8)
+#define plr_scrPosY     (SCREEN_HEIGHT / 2 - 16)
 
 //=============================================================================
 //POSITION IN LEVEL
 //=============================================================================
 //these return the player's meta-tile position in the level
 
-#define PLR_GET_X(plr)  (((plr)->pos.x + PLR_SCR_POS_X) / 16)
-#define PLR_GET_Y(plr)  (((plr)->pos.y + PLR_SCR_POS_Y) / 16)
+#define plr_getX(plr)  (((plr)->pos.x + plr_scrPosX) / 16)
+#define plr_getY(plr)  (((plr)->pos.y + plr_scrPosY) / 16)
 
 //=============================================================================
 //MOVEMENT
 //=============================================================================
 
-#define MOVE_COOLDOWN   15  //how long the player must wait to move again
+#define MOVE_COOLDOWN   12  //how long the player must wait to move again
 #define MOVE_FRAMES     8   //how many frames it takes to move one tile
 #define MOVE_INTERVAL   2   //the number of pixels to move each frame
-//NOTE: OPT_MOVE_INTERVAL x OPT_MOVE_FRAMES *must* be equal to 16 or the player desyncs with the grid
+//NOTE: OPT_MOVE_INTERVAL x OPT_MOVE_FRAMES must be equal to 16 or the player desyncs with the grid
 
 //=============================================================================
 //FUNCTIONS

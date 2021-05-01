@@ -1,0 +1,20 @@
+
+
+Bundle animations into sprites and make functions for showing, hiding, sorting and reordering sprites
+
+make an enemy type that's just a barrel with no ai and you have to attack it to destroy it
+
+ROADMAP
+turns
+door interaction
+enemy pathfinding
+enemy attacking
+meters
+player death
+player classes
+player names
+
+sprite module with animation support
+
+customizable player graphics like in powder
+player animations

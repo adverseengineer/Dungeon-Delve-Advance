@@ -3,7 +3,6 @@
 
 #include <tonc_types.h>
 #include <tonc_input.h>
-#include <tonc_mgba.h>
 
 #include "player.h"
 
@@ -21,7 +20,7 @@ static u32 move_cooldown = 0;   //the number of frames until you can move again
 //=============================================================================
 
 //ticks down the move timer and inches the player forward
-static inline void plr_move_tick(Player* plr) {
+static inline void plr_moveTick(Player* plr) {
 	//decrement the move timer to zero
 	if(move_timer > 0) {
 		move_timer--;
@@ -48,38 +47,38 @@ static inline void plr_move_tick(Player* plr) {
 
 
 //converts d-pad input into movement
-void plr_move(struct Player* plr, const Level* lvl, cu32 bg) {
+void plr_move(Player* plr, const Level* lvl, cu32 bg) {
 
 	//attempt to move a bit
-	plr_move_tick(plr);
+	plr_moveTick(plr);
 
 	//if the player is not moving and is allowed to move again
 	if((move_timer == 0) & (move_cooldown == 0)) {
 		
 		if(key_is_down(KEY_UP)) {
 			facing = FACING_UP;
-			if(LVL_IS_WALKABLE(lvl, PLR_GET_X(plr), PLR_GET_Y(plr) - 1)) {
+			if(LVL_IS_WALKABLE(lvl, plr_getX(plr), plr_getY(plr) - 1)) {
 				move_timer = MOVE_FRAMES;
 				move_cooldown = MOVE_COOLDOWN;
 			}
 		}
 		else if(key_is_down(KEY_DOWN)) {
 			facing = FACING_DOWN;
-			if(LVL_IS_WALKABLE(lvl, PLR_GET_X(plr), PLR_GET_Y(plr) + 1)) {
+			if(LVL_IS_WALKABLE(lvl, plr_getX(plr), plr_getY(plr) + 1)) {
 				move_timer = MOVE_FRAMES;
 				move_cooldown = MOVE_COOLDOWN;
 			}
 		}
 		else if(key_is_down(KEY_LEFT)) {
 			facing = FACING_LEFT;
-			if(LVL_IS_WALKABLE(lvl, PLR_GET_X(plr) - 1, PLR_GET_Y(plr))) {
+			if(LVL_IS_WALKABLE(lvl, plr_getX(plr) - 1, plr_getY(plr))) {
 				move_timer = MOVE_FRAMES;
 				move_cooldown = MOVE_COOLDOWN;
 			}
 		}
 		else if(key_is_down(KEY_RIGHT)) {
 			facing = FACING_RIGHT;
-			if(LVL_IS_WALKABLE(lvl, PLR_GET_X(plr) + 1, PLR_GET_Y(plr))) {
+			if(LVL_IS_WALKABLE(lvl, plr_getX(plr) + 1, plr_getY(plr))) {
 				move_timer = MOVE_FRAMES;
 				move_cooldown = MOVE_COOLDOWN;
 			}
