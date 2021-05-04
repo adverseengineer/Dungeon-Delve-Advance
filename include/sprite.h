@@ -30,10 +30,15 @@ struct Sprite {
 //FORWARD-DECLARATIONS
 //=============================================================================
 
-extern Sprite* spr_create(s32 x, s32 y, u32 tid, const AnimData* data);
+extern void spr_init(void);
+extern Sprite* spr_create(s32 x, s32 y, u32 tid, const AnimData* data, BOOL loop);
 extern void spr_destroy(Sprite* spr);
-extern Sprite* spr_pop(void);
 extern void spr_render(void);
+
+
+#include <tonc_mgba.h>
+extern void spr_print(void);
+
 
 //=============================================================================
 //INLINES

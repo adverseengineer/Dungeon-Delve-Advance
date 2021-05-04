@@ -18,7 +18,7 @@ typedef struct AnimData {
 
 typedef struct Anim {
     const AnimData* data;   //pointer to relevant AnimData
-    BOOL looped;            //whether or not the animation should replay automatically
+    BOOL loop;              //whether or not the animation should replay automatically
 	u8 frame;               //current frame index within AnimData
     u8 timer;               //remaining ticks until advancing to the next frame
 } ALIGN4 Anim;
@@ -27,10 +27,12 @@ typedef struct Anim {
 //FORWARD-DECLARATIONS
 //=============================================================================
 
-static inline void anim_init(Anim* anim, const AnimData* data);
+static inline void anim_init(Anim* anim, const AnimData* data, BOOL loop);
 static inline void anim_update(Anim* anim);
 static inline void anim_restart(Anim* anim);
 static inline void anim_setData(Anim* anim, const AnimData* data);
+static inline void anim_setLoop(Anim* anim, BOOL loop);
+static inline void anim_toggleLoop(Anim* anim);
 static inline u32 anim_getTid(const Anim* anim);
 
 //=============================================================================
@@ -38,19 +40,19 @@ static inline u32 anim_getTid(const Anim* anim);
 //=============================================================================
 
 //sets an animation's data
-static inline void anim_init(Anim* anim, const AnimData* data) {
+static inline void anim_init(Anim* anim, const AnimData* data, BOOL loop) {
 	anim_setData(anim, data);
+	anim_setLoop(anim, loop);
 	anim_restart(anim);
 }
 
-// TODO: consider reimplementing single-play (non-looping animations)
 // TODO: if i ever go the route of copying in anim tiles on the fly, consider reimplementing dirty()
 
 //advances the animation logic by one frame
 static inline void anim_update(Anim* anim) {
 	if(anim->data != NULL) {
 		//loop mode
-		if(anim->looped) {
+		if(anim->loop) {
 			if(anim->timer > 0)
 				anim->timer--;
 			else { //when it hits zero, jump one frame
@@ -88,6 +90,16 @@ static inline void anim_restart(Anim* anim) {
 //changes the animation's data pointer
 static inline void anim_setData(Anim* anim, const AnimData* data) {
 	anim->data = data;
+}
+
+
+static inline void anim_setLoop(Anim* anim, BOOL loop) {
+	anim->loop = loop;
+}
+
+
+static inline void anim_toggleLoop(Anim* anim) {
+	anim->loop = !anim->loop;
 }
 
 
