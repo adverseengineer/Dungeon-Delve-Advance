@@ -1,63 +1,42 @@
 //Nick Sells, 2021
 //player.h
 
-#ifndef PLAYER
-#define PLAYER
+//handles player interaction within a level
 
-#include <tonc_video.h>
-#include "level.h"
+#ifndef PLAYER_H
+#define PLAYER_H
 
-//TODO: any part of the player struct that doesn;t need to be saved to sram should be a global
+#include "sprite.h"
 
 //=============================================================================
 //STRUCTS
 //=============================================================================
 
-//NOTE: this disgusting forward declaration is to resolve a cyclic dependency
-typedef struct Level Level;
 typedef struct Player {
-	POINT16 pos;            //the player's position
+	Sprite* sprite;
+	POINT16 pos;
+	u16 hp_max;
+	u16 hp_current;
 } ALIGN4 Player;
 
 //=============================================================================
-//DIRECTIONS
+//INLINES
 //=============================================================================
 
-#define FACING_UP       1
-#define FACING_DOWN     0
-#define FACING_LEFT     2
-#define FACING_RIGHT    3
+static inline Player* plr_create(s32 x, s32 y, u32 hp_max, u32 hp_current) {
+	//allocate the needed memory
+	Player* plr = (Player*) calloc(1, sizeof(Player));
+	//set up the player
+	plr->pos.x = x;
+	plr->pos.y = y;
+	plr->hp_max = hp_max;
+	plr->hp_current = hp_current;
+	//set up the player's sprite
+	//TODO: set up a way to determine the correct player tid
+	// plr->sprite = spr_create(x * 16, y * 16, 1);
+	spr_link(plr->sprite);
 
-//=============================================================================
-//POSITION ON SCREEN
-//=============================================================================
-//the player sprite always stays at this position on-screen
-//you must add these when doing any sort of player location checking
+	return plr;
+}
 
-#define plr_scrPosX     (SCREEN_WIDTH / 2 - 8)
-#define plr_scrPosY     (SCREEN_HEIGHT / 2 - 16)
-
-//=============================================================================
-//POSITION IN LEVEL
-//=============================================================================
-//these return the player's meta-tile position in the level
-
-#define plr_getX(plr)  (((plr)->pos.x + plr_scrPosX) / 16)
-#define plr_getY(plr)  (((plr)->pos.y + plr_scrPosY) / 16)
-
-//=============================================================================
-//MOVEMENT
-//=============================================================================
-
-#define MOVE_COOLDOWN   12  //how long the player must wait to move again
-#define MOVE_FRAMES     8   //how many frames it takes to move one tile
-#define MOVE_INTERVAL   2   //the number of pixels to move each frame
-//NOTE: OPT_MOVE_INTERVAL x OPT_MOVE_FRAMES must be equal to 16 or the player desyncs with the grid
-
-//=============================================================================
-//FUNCTIONS
-//=============================================================================
-
-extern void plr_move(Player* plr, const Level* lvl, cu32 bg);
-
-#endif //PLAYER
+#endif //PLAYER_H

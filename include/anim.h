@@ -1,10 +1,12 @@
 //Nick Sells, 2021
 //anim.h
 
+//provides structs and functions for handling animations
+
 #ifndef ANIM_H
 #define ANIM_H
 
-#include <tonc_types.h>
+#include <tonc.h>
 
 //=============================================================================
 //STRUCTS
@@ -27,52 +29,48 @@ typedef struct Anim {
 //FORWARD-DECLARATIONS
 //=============================================================================
 
-static inline void anim_init(Anim* anim, const AnimData* data, BOOL loop);
-static inline void anim_update(Anim* anim);
-static inline void anim_restart(Anim* anim);
-static inline void anim_setData(Anim* anim, const AnimData* data);
-static inline void anim_setLoop(Anim* anim, BOOL loop);
-static inline void anim_toggleLoop(Anim* anim);
-static inline u32 anim_getTid(const Anim* anim);
+static inline void anim_restart(Anim* self);
+static inline void anim_setData(Anim* self, const AnimData* data);
+static inline void anim_setLoop(Anim* self, BOOL loop);
 
 //=============================================================================
 //FUNCTIONS
 //=============================================================================
 
 //sets an animation's data
-static inline void anim_init(Anim* anim, const AnimData* data, BOOL loop) {
-	anim_setData(anim, data);
-	anim_setLoop(anim, loop);
-	anim_restart(anim);
+static inline void anim_init(Anim* self, const AnimData* data, BOOL loop) {
+	anim_setData(self, data);
+	anim_setLoop(self, loop);
+	anim_restart(self);
 }
 
 // TODO: if i ever go the route of copying in anim tiles on the fly, consider reimplementing dirty()
 
 //advances the animation logic by one frame
-static inline void anim_update(Anim* anim) {
-	if(anim->data != NULL) {
+static inline void anim_update(Anim* self) {
+	if(self->data != NULL) {
 		//loop mode
-		if(anim->loop) {
-			if(anim->timer > 0)
-				anim->timer--;
+		if(self->loop) {
+			if(self->timer > 0)
+				self->timer--;
 			else { //when it hits zero, jump one frame
-				anim->frame++;
+				self->frame++;
 				//if the anim is over, start over and set the next timer
-				if(anim->frame >= anim->data->length)
-					anim->frame = 0;
-	    		anim->timer = anim->data->repeats[anim->frame];
+				if(self->frame >= self->data->length)
+					self->frame = 0;
+	    		self->timer = self->data->repeats[self->frame];
 			}
 		}
 		//non-looping mode
 		else {
 			//decrement the timer to zero
-			if (anim->timer > 0)
-				anim->timer--;
+			if (self->timer > 0)
+				self->timer--;
 			//when it hits zero and the anim is not finished,
-			else if(anim->frame < anim->data->length - 1) {
+			else if(self->frame < self->data->length - 1) {
 			//jump one frame and set the next timer
-				anim->frame++;
-				anim->timer = anim->data->repeats[anim->frame];
+				self->frame++;
+				self->timer = self->data->repeats[self->frame];
 			}
 		}
 
@@ -81,32 +79,31 @@ static inline void anim_update(Anim* anim) {
 
 
 //restarts an animation. mostly used for replaying a non-looping animation
-static inline void anim_restart(Anim* anim) {
-	anim->frame = 0;
-	anim->timer = 0;
+static inline void anim_restart(Anim* self) {
+	self->frame = 0;
+	self->timer = 0;
 }
 
 
 //changes the animation's data pointer
-static inline void anim_setData(Anim* anim, const AnimData* data) {
-	anim->data = data;
+static inline void anim_setData(Anim* self, const AnimData* data) {
+	self->data = data;
 }
 
 
-static inline void anim_setLoop(Anim* anim, BOOL loop) {
-	anim->loop = loop;
+static inline void anim_setLoop(Anim* self, BOOL loop) {
+	self->loop = loop;
 }
 
 
-static inline void anim_toggleLoop(Anim* anim) {
-	anim->loop = !anim->loop;
+static inline void anim_toggleLoop(Anim* self) {
+	self->loop = !self->loop;
 }
 
 
 //returns the current tid of the animation
-static inline u32 anim_getTid(const Anim* anim) {
-	return anim->data->frames[anim->frame];
+static inline u32 anim_getTid(const Anim* self) {
+	return self->data->frames[self->frame];
 }
 
-
-#endif //ANIM
+#endif //ANIM_H

@@ -1,14 +1,30 @@
 //Nick Sells, 2021
 //inventory.h
 
-#ifndef INVENTORY
-#define INVENTORY
+//implements the player's inventory screen
 
-#define INV_WIDTH   4
-#define INV_HEIGHT  4
+#ifndef INVENTORY_H
+#define INVENTORY_H
 
-typedef struct Inventory {
-	//TODO: decide if these should go on stack or heap
-} ALIGN4 Inventory;
+#include "item.h"
 
-#endif //INVENTORY
+//=============================================================================
+//DEFINES
+//=============================================================================
+
+#define INV_WIDTH   5
+#define INV_HEIGHT  5
+
+//=============================================================================
+//STRUCTS
+//=============================================================================
+
+static Item* items[INV_WIDTH * INV_HEIGHT];
+
+//=============================================================================
+//INLINES
+//=============================================================================
+
+//TODO:
+
+#endif //INVENTORY_H

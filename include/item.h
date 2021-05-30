@@ -1,19 +1,21 @@
 //Nick Sells, 2021
 //item.h
 
-#ifndef ITEM
-#define ITEM
+//represents an item type and instances of that item
 
-// TODO: items will cost 1.25x their price and sell for 0.8x their price \
-certain perks can improve this exchange rate
+#ifndef ITEM_H
+#define ITEM_H
+
+#include "info.h"
+
+// TODO: items will cost 1.25x their price and sell for 0.8x their price (rounded up)
 
 //=============================================================================
 //STRUCTS
 //=============================================================================
 
 typedef struct ItemData {
-	char* name;
-	char* desc;
+	Info info;
 	u8 category;
 	u8 price;
 } ALIGN4 ItemData;
@@ -23,4 +25,4 @@ typedef struct Item {
 	u8 amount;
 } ALIGN4 Item;
 
-#endif //ITEM
+#endif //ITEM_H
