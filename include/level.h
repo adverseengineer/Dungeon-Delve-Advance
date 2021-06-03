@@ -37,15 +37,16 @@ typedef enum RoomType {
 typedef enum TileType {
 	TILE_NONE           = SE_NONE,
 	TILE_WALL           = SE_WALL,
-	TILE_FLOOR_ROOM     = SE_FLOOR,   //two different types of floor tiles are necessary for item placement logic
-	TILE_FLOOR_HALL     = SE_FLOOR,
-	TILE_WATER          = SE_FLOOR_WATER,
-	TILE_FOLIAGE        ,//TODO: draw this
-	TILE_CHASM          ,//TODO: draw this
-	TILE_DOOR_CLOSED    = SE_DOOR_OPEN,
+	TILE_WALL_ALT       = SE_WALL_ALT,
 	TILE_DOOR_OPEN      = SE_DOOR_CLOSED,
+	TILE_DOOR_CLOSED    = SE_DOOR_OPEN,
 	TILE_ENTRY          = SE_LADDER_UP,
-	TILE_EXIT           = SE_LADDER_DOWN
+	TILE_EXIT           = SE_LADDER_DOWN,
+	TILE_FLOOR_ROOM     = SE_FLOOR, //NOTE: two different types of floor tiles are necessary for item placement logic
+	TILE_FLOOR_HALL     = SE_FLOOR,
+	TILE_FOLIAGE        = SE_FOLIAGE,
+	TILE_WATER          = SE_WATER,
+	TILE_CHASM          = SE_CHASM
 } ALIGN4 TileType;
 
 typedef enum TerrainType {
@@ -80,31 +81,23 @@ static inline void lvl_destroy(Level* lvl) {
 }
 
 //returns a visual tile from the level
-static inline u32 lvl_getTile(const Level* lvl, u32 x, u32 y) {
-	if(lvl != NULL)
-		return lvl->tiles[x + y * LVL_WIDTH];
-	else
-		return ERR;
+static inline TileType lvl_getTile(const Level* lvl, u32 x, u32 y) {
+	return lvl->tiles[x + y * LVL_WIDTH];
 }
 
 //sets a visual tile in the level
 static inline void lvl_setTile(Level* lvl, u32 x, u32 y, TileType tile) {
-	if(lvl != NULL)
-		lvl->tiles[x + y * LVL_WIDTH] = tile;
+	lvl->tiles[x + y * LVL_WIDTH] = tile;
 }
 
 //gets a collision tile from the level
-static inline u32 lvl_getTerrain(const Level* lvl, u32 x, u32 y) {
-	if(lvl != NULL)
-		return lvl->terrain[x + y * LVL_WIDTH];
-	else
-		return ERR;
+static inline TerrainType lvl_getTerrain(const Level* lvl, u32 x, u32 y) {
+	return lvl->terrain[x + y * LVL_WIDTH];
 }
 
 //sets a collision tile in the level
 static inline void lvl_setTerrain(Level* lvl, u32 x, u32 y, TerrainType terrain) {
-	if(lvl != NULL)
-		lvl->terrain[x + y * LVL_WIDTH] = terrain;
+	lvl->terrain[x + y * LVL_WIDTH] = terrain;
 }
 
 //places rooms, hallways, items, and enemies
@@ -133,16 +126,15 @@ static inline void lvl_build(Level* lvl) {
 }
 
 //NOTE: REMOVE ME BEFORE COMMITTING
-#include <tonc_input.h>
 static inline void lvl_scroll(Level* lvl) {
 	lvl->offset.x += (key_tri_horz() * 3);
 	lvl->offset.y += (key_tri_vert() * 3);
+	REG_BG_OFS[BG_LVL] = lvl->offset;
 }
 
 //plots a level to the level sbb defined in config.h
 static inline void lvl_draw(const Level* lvl) {
-	REG_BG_OFS[BG_LVL] = lvl->offset;
-
+	
 	for(u32 y = 0; y < LVL_HEIGHT; y++) {
 	for(u32 x = 0; x < LVL_WIDTH; x++) {
 		bg_plot_m(SBB_LVL, x, y, lvl_getTile(lvl, x, y));

@@ -31,9 +31,9 @@ struct Actor {
 	u32 currentHP;
 	u32 atk;
 	//"method" pointers
-	void (*idle)(Actor* self);
-	void (*attack)(Actor* self, Actor* other);
-	void (*die)(Actor* self);
+	void (*idle) (Actor* self);
+	void (*attack) (Actor* self, Actor* other);
+	void (*die) (Actor* self);
 };
 
 //=============================================================================

@@ -10,11 +10,13 @@
 
 #define ERR			            0xB00B
 
-#define DIR_NONE                0
-#define DIR_UP                  1
-#define DIR_DOWN                2
-#define DIR_LEFT                3
-#define DIR_RIGHT               4
+typedef enum Direction {
+	DIR_NONE,
+	DIR_UP,
+	DIR_DOWN,
+	DIR_LEFT,
+	DIR_RIGHT
+} ALIGN4 Direction;
 
 #define MTILE_SIZE              16
 

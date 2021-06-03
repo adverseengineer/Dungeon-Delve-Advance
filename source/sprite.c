@@ -7,7 +7,7 @@
 //GLOBALS
 //=============================================================================
 
-BOOL needRedraw;
+BOOL spr_needRedraw;
 
 static Sprite* head;
 static u8 sprite_counter;
@@ -35,7 +35,7 @@ void spr_link(Sprite* spr) {
 		spr->next = head;
 		head = spr;
 
-		needRedraw = TRUE;
+		spr_needRedraw = TRUE;
 	}
 }
 
@@ -65,14 +65,14 @@ void spr_unlink(Sprite* spr) {
 		else
 			previous->next = current->next;
 
-		needRedraw = TRUE;
+		spr_needRedraw = TRUE;
 	}
 }
 
 
 //renders all sprites in the list
 void spr_render(void) {
-	if(needRedraw) {
+	if(spr_needRedraw) {
 		Sprite* current = head;
 		u32 i;
 		for(i = 0; current != NULL; i++) {
@@ -82,7 +82,7 @@ void spr_render(void) {
 		
 		obj_hide_multi(&oam_mem[i], MAX_SPRITES - i);
 
-		needRedraw = FALSE;
+		spr_needRedraw = FALSE;
 	}
 }
 

@@ -30,7 +30,7 @@ struct Sprite {
 //EXTERNS
 //=============================================================================
 
-extern BOOL needRedraw;
+extern BOOL spr_needRedraw;
 
 extern void spr_init(void);
 extern void spr_link(Sprite* self);
@@ -64,7 +64,7 @@ static inline s32 spr_getX(const Sprite* self) {
 //sets a sprite's x coord
 inline void spr_setX(Sprite* self, s32 x) {
 	BFN_SET(self->obj.attr1, x, ATTR1_X);
-	needRedraw = TRUE;
+	spr_needRedraw = TRUE;
 }
 
 //gets a sprite's y coord
@@ -75,32 +75,32 @@ inline s32 spr_getY(const Sprite* self) {
 //sets a sprite's y coord
 inline void spr_setY(Sprite* self, s32 x){
 	BFN_SET(self->obj.attr0, x, ATTR0_Y);
-	needRedraw = TRUE;
+	spr_needRedraw = TRUE;
 }
 
 //moves the given sprite to the given coords
 static inline void spr_setPos(Sprite* self, s32 x, s32 y) {
 	obj_set_pos(&self->obj, x, y);
-	needRedraw = TRUE;
+	spr_needRedraw = TRUE;
 }
 
 //moves the given sprite relative to it's current position
 static inline void spr_move(Sprite* self, s32 dx, s32 dy) {
 	spr_setX(self, dx + spr_getX(self));
 	spr_setY(self, dy + spr_getY(self));
-	needRedraw = TRUE;
+	spr_needRedraw = TRUE;
 }
 
 //flips a sprite horizontally
 inline void spr_flipHorz(Sprite* self) {
 	self->obj.attr1 ^= ATTR1_HFLIP;
-	needRedraw = TRUE;
+	spr_needRedraw = TRUE;
 }
 
 //flips a sprite vertically
 inline void spr_flipVert(Sprite* self) {
 	self->obj.attr1 ^= ATTR1_VFLIP;
-	needRedraw = TRUE;
+	spr_needRedraw = TRUE;
 }
 
 #endif //SPRITE_H
