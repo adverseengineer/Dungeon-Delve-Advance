@@ -4,12 +4,14 @@
 #include "common.h"
 #include "config.h"
 
-#include "level.h"
+#include "actor_level_common.h"
 #include "ui.h"
 
 //gfx
 #include "gfx_lvl.h"
 #include "gfx_ui.h"
+
+#include "gfx_player_warrior.h"
 
 static inline void vid_init(void) {
 
@@ -37,34 +39,35 @@ static inline void vid_init(void) {
 	//copy ui gfx
 	GRIT_CPY(tile_mem[CBB_UI], gfx_uiTiles);
 	GRIT_CPY(pal_bg_bank[PB_UI], gfx_uiPal);
+	//copy sprite gfx
+	GRIT_CPY(tile_mem_obj, gfx_player_warriorTiles);
+	GRIT_CPY(pal_obj_mem, gfx_player_warriorPal);
 
 	spr_init();
 }
 
 int main(void) {
+
 	vid_init();
 
-	Level* l = lvl_create();
-	lvl_build(l);
-	lvl_draw(l);
+	Level* lvl = lvl_create();
+	Actor* atr1 = lvl_spawnActor(lvl, ACTOR_BASE, 1, 1);
+	Actor* atr2 = lvl_spawnActor(lvl, ACTOR_BASE, 3, 2);
 
-	Actor* a = actor_create(ACTOR_BASE, 0, 0);
-	Actor* b = actor_create(ACTOR_SKELETON, 10, 10);
+	spr_link(atr1->sprite);
+	spr_link(atr2->sprite);
+
+	lvl_build(lvl);
+	lvl_draw(lvl);
 
 	while(TRUE) {
 		VBlankIntrWait();
 		key_poll();
 
-		lvl_scroll(l);
-
-		ui_draw();
-		ui_update();
-
+		lvl_scroll(lvl);
 		spr_render();
 
-		if(key_hit(KEY_A)) {
-			actor_move(a, 1, 0);
-			a->attack(a, b);
-		}
+		// ui_draw();
+		// ui_update();
 	}
 }

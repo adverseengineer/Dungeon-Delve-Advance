@@ -39,4 +39,17 @@ static inline void ui_update(void) {
 	}
 }
 
+//handles the tile trickery that pulls off a pixel-accurate hp and mp bar
+static inline void ui_updateMeters(void) {
+	const SCR_ENTRY meter0 = SE_METER_0;
+	const SCR_ENTRY meter1 = SE_METER_1;
+	//TODO:
+	//NOTE: the way my meter graphics are shaped allows me to do something like this:
+	//#-----#
+	//##-----#
+	//##-----#
+	//#-----#
+	//where # is border and - is meter fill. just give the two middle rows a horizontal offest of one
+}
+
 #endif //UI_H

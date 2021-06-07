@@ -23,6 +23,7 @@
 typedef struct Sprite Sprite;
 struct Sprite {
 	OBJ_ATTR obj;
+	BOOL onScreen;
 	Sprite* next;
 } ALIGN4;
 
@@ -101,6 +102,12 @@ inline void spr_flipHorz(Sprite* self) {
 inline void spr_flipVert(Sprite* self) {
 	self->obj.attr1 ^= ATTR1_VFLIP;
 	spr_needRedraw = TRUE;
+}
+
+//returns true if a sprite is within the screen bounds, give or take 16 pixels
+static inline BOOL spr_onScreen(Sprite* self) {
+	return in_range(spr_getX(self), -16, SCREEN_WIDTH + 16)
+		&& in_range(spr_getY(self), -16, SCREEN_HEIGHT + 16);
 }
 
 #endif //SPRITE_H

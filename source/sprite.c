@@ -43,7 +43,7 @@ void spr_link(Sprite* spr) {
 //delete a link with given key
 void spr_unlink(Sprite* spr) {
 	//only destroy if there is at least one sprite
-	if((sprite_counter > 0) & (head != NULL)) {
+	if((sprite_counter > 0) && (head != NULL)) {
 		sprite_counter--;
 
 		Sprite* current = head;

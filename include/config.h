@@ -6,6 +6,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define DEBUG
+
 //BG layers
 #define BG_TXT              0
 #define BG_UI               1
@@ -44,18 +46,22 @@
 #define SE_ITEM_PANE        4  | SE_PALBANK(PB_UI)
 #define SE_HP_ICON			8  | SE_PALBANK(PB_UI)
 #define SE_MP_ICON          12 | SE_PALBANK(PB_UI)
+#define SE_METER_0          16 | SE_PALBANK(PB_UI)
+#define SE_METER_1          20 | SE_PALBANK(PB_UI)
 
 //object tid's
+//TODO: after copying all obj tiles to vram, assign these
 #define TID_ERR             0 //placeholder sprite
-#define TID_PLAYER_WARRIOR  1
-#define TID_PLAYER_MAGE     2
-#define TID_MIMIC           3
-#define TID_CACO            4
-#define TID_BAT             5
-#define TID_SLIME           6
-#define TID_RAT             7
-#define TID_GOLD            8
-#define TID_SIGN            9
+#define TID_PLAYER_WARRIOR  0
+#define TID_PLAYER_MAGE     0
+#define TID_SKELETON        0
+#define TID_MIMIC           0
+#define TID_CACO            0
+#define TID_BAT             0
+#define TID_SLIME           0
+#define TID_RAT             0
+#define TID_GOLD            0
+#define TID_SIGN            0
 
 //level generator parameters
 #define LVL_WIDTH           32
