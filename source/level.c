@@ -1,15 +1,25 @@
 //Nick Sells, 2021
 //level.c
 
-#include "actor_level_common.h"
+#include <stdlib.h>
+
+#include "level.h"
 
 //=============================================================================
 //CONSTRUCTOR/DESTRUCTOR
 //=============================================================================
 
+//actor contains a pointer to the level it inhabits
+//actors are stored in a list
+//actor needs to include level
+
+//level does not need to know about actors
+
 //allocate all the memory needed for a Level
 Level* lvl_create(void) {
-	Level* self = (Level*) calloc(1, sizeof(*self));
+	Level* self = calloc(1, sizeof(*self));
+	self->tiles = calloc(LVL_HEIGHT * LVL_WIDTH, sizeof(*self->tiles));
+	self->terrain = calloc(LVL_HEIGHT * LVL_WIDTH, sizeof(*self->terrain));
 	return self;
 }
 
@@ -25,16 +35,26 @@ void lvl_destroy(Level* self) {
 //FUNCTION DEFINITIIONS
 //=============================================================================
 
-//creates an actor bound to this level and returns a pointer to it
-Actor* lvl_spawnActor(Level* self, ActorType type, u32 x, u32 y) {
-	for(u32 i = 0; i < MAX_ACTORS; i++) {
+//claims the next available actor slot, sets it up, and returns a pointer to it
+//TODO: test
+Actor* lvl_createActor(Level* self, ActorType type, u32 x, u32 y) {
+	for(size_t i = 0; i < MAX_ACTORS; i++) {
 		if(self->actors[i] == NULL) {
-			self->actors[i] = actor_create(type, x, y);
+			//claim the slot and set up the actor
+			self->actors[i] = actor_create(type);
 			actor_setPos(self->actors[i], self, x, y);
 			return self->actors[i];
 		}
 	}
+	//if no slot was available,
+	mgba_printf(LOG_ERR, "failed to create actor: no actor slots available");
 	return NULL;
+}
+
+//relinquishes an actor slot
+void lvl_destroyActor(Level* self, Actor* actor) {
+	actor_destroy(actor);
+	actor = NULL;
 }
 
 //returns a visual tile from the level
@@ -60,22 +80,32 @@ void lvl_setTerrain(Level* self, u32 x, u32 y, TerrainType terrain) {
 //places rooms, hallways, items, and enemies
 void lvl_build(Level* self) {
 
-	for(u32 x = 0; x < LVL_WIDTH; x++) {
+	for(size_t x = 0; x < LVL_WIDTH; x++) {
 		if(in_range(qran_range(0, 64), 0, 56))
 			lvl_setTile(self, x, 0, TILE_WALL);
 		else
 			lvl_setTile(self, x, 0, TILE_WALL_ALT);
+
+		if(in_range(qran_range(0, 64), 0, 56))
+			lvl_setTile(self, x, LVL_HEIGHT - 1, TILE_WALL);
+		else
+			lvl_setTile(self, x, LVL_HEIGHT - 1, TILE_WALL_ALT);
 	}
 	
-	for(u32 y = 1; y < LVL_HEIGHT; y++) {
+	for(size_t y = 1; y < LVL_HEIGHT; y++) {
 		if(in_range(qran_range(0, 64), 0, 56))
 			lvl_setTile(self, 0, y, TILE_WALL);
 		else
 			lvl_setTile(self, 0, y, TILE_WALL_ALT);
+
+		if(in_range(qran_range(0, 64), 0, 56))
+			lvl_setTile(self, LVL_WIDTH - 1, y, TILE_WALL);
+		else
+			lvl_setTile(self, LVL_WIDTH - 1, y, TILE_WALL_ALT);
 	}
 
-	for(u32 y = 1; y < LVL_HEIGHT; y++) {
-	for(u32 x = 1; x < LVL_WIDTH; x++) {
+	for(size_t y = 1; y < LVL_HEIGHT - 1; y++) {
+	for(size_t x = 1; x < LVL_WIDTH - 1; x++) {
 		u32 roll = qran_range(0, 64);
 		if(in_range(roll, 0, 32))
 			lvl_setTile(self, x, y, TILE_FLOOR_ROOM);
@@ -95,33 +125,26 @@ void lvl_build(Level* self) {
 	lvl_setTile(self, 4, 1, TILE_WALL);
 }
 
-static u32 scroll_timer = 0;
+//scrolls a level around. also moves sprites and stops at edges
 void lvl_scroll(Level* self) {
 
-	if(scroll_timer == 0) {
-		u32 dx = key_tri_horz();
-		u32 dy = key_tri_vert();
-		self->offset.x += (dx * 16);
-		self->offset.y += (dy * 16);
-		REG_BG_OFS[BG_LVL] = self->offset;
+	u32 dx = 2 * key_tri_horz();
+	u32 dy = 2 * key_tri_vert();
 
-		for(u32 i = 0; i < MAX_ACTORS; i++) {
-			if(self->actors[i] != NULL) {
-				//NOTE: does this desync actor's pos with their sprite pos? does it matter?
-				spr_move(self->actors[i]->sprite, -dx * 16, -dy * 16);
-			}
-		}
-
-		scroll_timer = 6;
-	}
-	else
-		scroll_timer--;
+	//scroll the level
+	self->offset.x += dx;
+	self->offset.y += dy;
+	REG_BG_OFS[BG_LVL] = self->offset;
+	//move the actors along with it
+	for(size_t i = 0; i < MAX_ACTORS; i++)
+		if(self->actors[i] != NULL)
+			spr_move(self->actors[i]->sprite, -dx, -dy);
 }
 
 //plots a level to the level sbb defined in config.h
 void lvl_draw(const Level* self) {
-	for(u32 y = 0; y < LVL_HEIGHT; y++) {
-	for(u32 x = 0; x < LVL_WIDTH; x++) {
+	for(size_t y = 0; y < LVL_HEIGHT; y++) {
+	for(size_t x = 0; x < LVL_WIDTH; x++) {
 		bg_plot_m(SBB_LVL, x, y, lvl_getTile(self, x, y));
 	}}
 }

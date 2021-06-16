@@ -4,7 +4,7 @@
 #include "common.h"
 #include "config.h"
 
-#include "actor_level_common.h"
+#include "level.h"
 #include "ui.h"
 
 //gfx
@@ -12,6 +12,7 @@
 #include "gfx_ui.h"
 
 #include "gfx_player_warrior.h"
+#include "gfx_skeleton.h"
 
 static inline void vid_init(void) {
 
@@ -29,9 +30,9 @@ static inline void vid_init(void) {
 	tte_init_chr4c_default(BG_TXT, BG_CBB(CBB_TXT) | BG_SBB(SBB_TXT));
 	tte_set_font(&tahoma9Font);
 	//set up the ui layer
-	REG_BG1CNT = BG_CBB(CBB_UI) | BG_SBB(SBB_UI) | BG_REG_32x32 | BG_4BPP;
+	REG_BGCNT[BG_UI] = BG_CBB(CBB_UI) | BG_SBB(SBB_UI) | BG_REG_32x32 | BG_4BPP;
 	//set up the level layer
-	REG_BG2CNT = BG_CBB(CBB_LVL) | BG_SBB(SBB_LVL) | BG_REG_64x64 | BG_4BPP;
+	REG_BGCNT[BG_LVL] = BG_CBB(CBB_LVL) | BG_SBB(SBB_LVL) | BG_REG_64x64 | BG_4BPP;
 
 	//copy lvl gfx
 	GRIT_CPY(tile_mem[CBB_LVL], gfx_lvlTiles);
@@ -42,8 +43,21 @@ static inline void vid_init(void) {
 	//copy sprite gfx
 	GRIT_CPY(tile_mem_obj, gfx_player_warriorTiles);
 	GRIT_CPY(pal_obj_mem, gfx_player_warriorPal);
-
+	//set up sprite list and oam
 	spr_init();
+}
+
+//TODO: move to level.h and .c
+void lvl_timeStep(Level* self) {
+
+	//for every actor in the level
+		//let them act out their turn
+
+	//for every tile in the level:
+		//if it's fire
+			//roll to spread it
+		//if it's poison gas
+			//roll to spread it
 }
 
 int main(void) {
@@ -51,23 +65,32 @@ int main(void) {
 	vid_init();
 
 	Level* lvl = lvl_create();
-	Actor* atr1 = lvl_spawnActor(lvl, ACTOR_BASE, 1, 1);
-	Actor* atr2 = lvl_spawnActor(lvl, ACTOR_BASE, 3, 2);
 
-	spr_link(atr1->sprite);
-	spr_link(atr2->sprite);
+	Actor* plr = lvl_createActor(lvl, ACTOR_PLAYER, 1, 1);
+	Actor* skl = lvl_createActor(lvl, ACTOR_SKELETON, 3, 2);
 
 	lvl_build(lvl);
 	lvl_draw(lvl);
+
+	u32 turn_timer = 0;
 
 	while(TRUE) {
 		VBlankIntrWait();
 		key_poll();
 
+		if(turn_timer == 0) {
+			lvl_timeStep(lvl);
+
+			turn_timer = 10;
+		}
+		else
+			turn_timer--;
+
+
 		lvl_scroll(lvl);
 		spr_render();
 
-		// ui_draw();
-		// ui_update();
+		ui_draw();
+		ui_update();
 	}
 }
