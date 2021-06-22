@@ -46,7 +46,7 @@ CFLAGS	:=	-g -Wall -O2\
 		-mcpu=arm7tdmi -mtune=arm7tdmi\
 		$(ARCH)
 
-CFLAGS  +=	-flto
+CFLAGS  +=	-flto #-O3
 
 CFLAGS	+=	$(INCLUDE)
 

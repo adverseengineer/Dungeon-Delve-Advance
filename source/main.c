@@ -12,7 +12,10 @@
 #include "gfx_ui.h"
 
 #include "gfx_player_warrior.h"
+#include "gfx_player_mage.h"
 #include "gfx_skeleton.h"
+
+#include "util.h"
 
 static inline void vid_init(void) {
 
@@ -43,21 +46,9 @@ static inline void vid_init(void) {
 	//copy sprite gfx
 	GRIT_CPY(tile_mem_obj, gfx_player_warriorTiles);
 	GRIT_CPY(pal_obj_mem, gfx_player_warriorPal);
+	//
 	//set up sprite list and oam
 	spr_init();
-}
-
-//TODO: move to level.h and .c
-void lvl_timeStep(Level* self) {
-
-	//for every actor in the level
-		//let them act out their turn
-
-	//for every tile in the level:
-		//if it's fire
-			//roll to spread it
-		//if it's poison gas
-			//roll to spread it
 }
 
 int main(void) {
@@ -66,31 +57,60 @@ int main(void) {
 
 	Level* lvl = lvl_create();
 
-	Actor* plr = lvl_createActor(lvl, ACTOR_PLAYER, 1, 1);
-	Actor* skl = lvl_createActor(lvl, ACTOR_SKELETON, 3, 2);
+	Actor* atr = lvl_createActor(lvl, ACTOR_SKELETON, 4, 7);
 
 	lvl_build(lvl);
 	lvl_draw(lvl);
-
-	u32 turn_timer = 0;
 
 	while(TRUE) {
 		VBlankIntrWait();
 		key_poll();
 
-		if(turn_timer == 0) {
-			lvl_timeStep(lvl);
+		if(key_hit(KEY_A | KEY_B)) {
+			lvl_build(lvl);
 
-			turn_timer = 10;
+			lvl_erase();
+			lvl_draw(lvl);
 		}
-		else
-			turn_timer--;
-
 
 		lvl_scroll(lvl);
-		spr_render();
 
 		ui_draw();
 		ui_update();
+
+		spr_render();
 	}
 }
+
+// TODO: each room except entrance and exits have a chance to have enemies in them. when
+//generating a room, spawn a random number of enemies in there. dynamically allocate the
+//entities and add them to the entity array. the mob cap is 32
+
+// TODO: place entries/exits
+// TODO: room types
+// TODO: decor tiles (grass, water)
+// TODO: place n chests in every map with at least m empty spaces in every direction
+// TODO: implement level themes
+// TODO: consider scrapping chasm levels. i really like the tightly clustered result of 3 recursions on a 32x32 map
+
+// TODO: in most cases, water and foliage will cost more than regular terrain
+// TODO: all terrain except walls and none will cost the same for flying enemies
+// TODO: lightning will do double damage if the target is standing on water
+// TODO: flying enemies will take double damage from lightning
+// TODO: slimes will prefer water tiles
+// TODO: all enemies will prefer water tiles when on fire
+// TODO: foliage tiles will be flammable and spread
+// TODO: some enemies can't go through doors because they are "too big"
+// TODO: place a door to a shop somewhere on the outer edge of a level. leads to a shop level that you come ang go from
+
+// TODO: flooded will use cellular automata to place water tiles throughout the level
+// TODO: overgrown will randomly place foliage everywhere
+// TODO: ruined will knock out huge (non-essential) chunks of floor
+// TODO: chasm will make the hallways catwalks and the rooms hollow pillars
+
+// TODO: entry will contain the stairs to the floor above
+// TODO: exit will contain the stairs to the floor below
+
+// TODO: the level details like cracks and moldy walls will be randomly generated but every time the player leaves a floor, it's state will be saved to sram
+
+//TODO: (JUN 14th) if the wall between two rooms is only one block thick, roll to make it destructible by a bomb

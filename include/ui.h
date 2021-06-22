@@ -10,7 +10,7 @@
 static BOOL ui_needRedraw = TRUE;
 static BOOL ui_inventoryVisible;
 
-static POINT16 ui_selectedPanel;
+// static POINT16 ui_selectedPanel;
 
 //renders the ui
 static inline void ui_draw(void) {
@@ -41,8 +41,7 @@ static inline void ui_update(void) {
 
 //handles the tile trickery that pulls off a pixel-accurate hp and mp bar
 static inline void ui_updateMeters(void) {
-	const SCR_ENTRY meter0 = SE_METER_0;
-	const SCR_ENTRY meter1 = SE_METER_1;
+	// const SCR_ENTRY meter0 = SE_METER_1;
 	//TODO:
 	//NOTE: the way my meter graphics are shaped allows me to do something like this:
 	//#-----#
