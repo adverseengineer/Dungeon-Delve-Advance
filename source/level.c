@@ -25,38 +25,46 @@ static size_t numHalls = 0;
 
 //allocates all the memory needed for a Level
 Level* lvl_create(void) {
-	Level* self = calloc(1, sizeof(*self));
-	self->tiles = calloc(LVL_HEIGHT * LVL_WIDTH, sizeof(*self->tiles));
-	self->terrain = calloc(LVL_HEIGHT * LVL_WIDTH, sizeof(*self->terrain));
-	return self;
+	Level* this = calloc(1, sizeof(*this));
+	this->tiles = calloc(LVL_HEIGHT * LVL_WIDTH, sizeof(*this->tiles));
+	this->terrain = calloc(LVL_HEIGHT * LVL_WIDTH, sizeof(*this->terrain));
+	return this;
 }
 
 //deallocates the level
-void lvl_destroy(Level* self) {
+void lvl_destroy(Level* this) {
 	for(u32 i = MAX_ACTORS; i > 0; i--)
-		actor_destroy(self->actors[i]);
+		actor_destroy(this->actors[i]);
 
-	free(self);
+	free(this);
+}
+
+void lvl_setPlayer(Level* this, Player* plr) {
+	this->player = plr;
+	//TODO: set the player to the center of the level
 }
 
 //claims the next available actor slot, sets it up, and returns a pointer to it
-Actor* lvl_createActor(Level* self, ActorType type, u32 x, u32 y) {
+Actor* lvl_createActor(Level* this, ActorType type, u32 x, u32 y) {
 	for(size_t i = 0; i < MAX_ACTORS; i++) {
-		if(self->actors[i] == NULL) {
+		if(this->actors[i] == NULL) {
 			//claim the slot and set up the actor
-			self->actors[i] = actor_create(type);
-			self->actors[i]->lvl = self;
-			actor_setPos(self->actors[i], self, x, y);
-			return self->actors[i];
+			this->actors[i] = actor_create(type);
+			this->actors[i]->lvl = this;
+			actor_setPos(this->actors[i], this, x, y);
+			return this->actors[i];
 		}
 	}
-	//if no slot was available,
-	mgba_printf(LOG_ERR, "failed to create actor: no actor slots available");
+
+	//if no slot was available
+	DEBUG_BLOCK(
+		mgba_printf(LOG_ERR, "failed to create actor: no actor slots available");
+	);
 	return NULL;
 }
 
 //relinquishes an actor slot
-void lvl_destroyActor(Level* self, Actor* actor) {
+void lvl_destroyActor(Level* this, Actor* actor) {
 	actor_destroy(actor);
 	actor = NULL;
 }
@@ -66,33 +74,31 @@ void lvl_destroyActor(Level* self, Actor* actor) {
 //=============================================================================
 
 //scrolls a level around. also moves sprites and stops at edges
-void lvl_scroll(Level* self) {
+void lvl_scroll(Level* this) {
 
-	u32 dx = 16 * key_tri_horz();
-	u32 dy = 16 * key_tri_vert();
+	s32 dx = 16 * key_tri_horz();
+	s32 dy = 16 * key_tri_vert();
 
-	//if the viewport is not already out of bounds
-	if(in_range(self->offset.x + dx, 0, LVL_WIDTH * 16 - SCREEN_WIDTH)
-	&& in_range(self->offset.y + dy, 0, LVL_HEIGHT * 16 - SCREEN_HEIGHT)) {
-		
-		mgba_printf(LOG_INFO, "")
-		//scroll the level, but do not go into parallel universes
-		self->offset.x = clamp(self->offset.x + dx, 0, LVL_WIDTH * 16 - SCREEN_WIDTH);
-		self->offset.y = clamp(self->offset.y + dy, 0, LVL_HEIGHT * 16 - SCREEN_HEIGHT);		
-		REG_BG_OFS[BG_LVL] = self->offset;
+	//if we can move without going out of bounds
+	if(in_range(this->offset.x + dx, 0, LVL_WIDTH * 16 - SCREEN_WIDTH + 1)
+	&& in_range(this->offset.y + dy, 0, LVL_HEIGHT * 16 - SCREEN_HEIGHT + 1)) {
+
+		this->offset.x += dx; 
+		this->offset.y += dy;
+		REG_BG_OFS[BG_LVL] = this->offset;
 
 		//move the actors along with it
 		for(size_t i = 0; i < MAX_ACTORS; i++)
-			if(self->actors[i] != NULL)
-				spr_move(self->actors[i]->sprite, -dx, -dy);
+			if(this->actors[i] != NULL)
+				spr_move(this->actors[i]->sprite, -dx, -dy);
 	}
 }
 
 //plots a level to the level sbb defined in config.h
-void lvl_draw(const Level* self) {
+void lvl_draw(const Level* this) {
 	for(size_t y = 0; y < LVL_HEIGHT; y++) {
 	for(size_t x = 0; x < LVL_WIDTH; x++) {
-		bg_plot_m(SBB_LVL, x, y, lvl_getTile(self, x, y));
+		bg_plot_m(SBB_LVL, x, y, lvl_getTile(this, x, y));
 	}}
 }
 
@@ -122,38 +128,35 @@ void lvl_erase(void) {
 //***TODO:*** limit what tiles hall floors can overwrite so that they don't cut so deeply between rooms
 //this will allow me to rely on tile types to know where hallways apprarent stop and start
 
-static void lvl_design(Level* self, RECT* rect, size_t numIterations);
+static void lvl_design(Level* this, RECT* rect, size_t numIterations);
 
 static void lvl_deferRoom(const RECT* rect);
 static void lvl_deferHall(const Hall* hall);
 
 static void lvl_tweakRooms(void);
-static void lvl_buildRooms(Level* self);
-static void lvl_buildHalls(Level* self);
-static void lvl_placeDoors(Level* self);
-static void lvl_placeItems(Level* self);
-static void lvl_placeActors(Level* self);
+static void lvl_buildRooms(Level* this);
+static void lvl_buildHalls(Level* this);
+static void lvl_placeDoors(Level* this);
+static void lvl_placeItems(Level* this);
+static void lvl_placeActors(Level* this);
 
 static void lvl_splitRect(const RECT* original, RECT* p1, RECT* p2, size_t numAttempts);
 
 //places rooms, hallways, items, and enemies
-void lvl_build(Level* self) {
+void lvl_build(Level* this) {
 
-	//FIXME: remove this before committing.
-	profile_start();
-
-	//FIXME: remove this before committing. it just lets me quickly cycle through dungeon builds
-	for(size_t y = 0; y < LVL_HEIGHT; y++) {
-	for(size_t x = 0; x < LVL_WIDTH; x++) {
-		lvl_setTile(self, x, y, TILE_NONE);
-	}}
-	//FIXME: remove this too
-	for(size_t i = 0; i < MAX_ACTORS; i++) {
-		if(self->actors[i] != NULL)
-			lvl_destroyActor(self, self->actors[i]);
-	}
-
-
+	DEBUG_BLOCK(
+		profile_start();
+		//NOTE: this just lets me cycle through level layouts quicker
+		for(size_t y = 0; y < LVL_HEIGHT; y++) {
+		for(size_t x = 0; x < LVL_WIDTH; x++) {
+			lvl_setTile(this, x, y, TILE_NONE);
+		}}
+		for(size_t i = 0; i < MAX_ACTORS; i++) {
+			if(this->actors[i] != NULL)
+				lvl_destroyActor(this, this->actors[i]);
+		}
+	);
 
 	//allocate the temp arrays to store things until they can be built
 	rooms = calloc(1 << NUM_RECUR, sizeof(*rooms));
@@ -161,15 +164,15 @@ void lvl_build(Level* self) {
 
 	//design the level, using an initial BSP partition
 	RECT temp = {0, 0, LVL_WIDTH, LVL_HEIGHT};
-	lvl_design(self, &temp, NUM_RECUR);
+	lvl_design(this, &temp, NUM_RECUR);
 
 	//build the level
 	lvl_tweakRooms();
-	lvl_buildRooms(self);
-	lvl_buildHalls(self);
-	lvl_placeDoors(self);
-	lvl_placeItems(self);
-	lvl_placeActors(self);
+	lvl_buildRooms(this);
+	lvl_buildHalls(this);
+	lvl_placeDoors(this);
+	lvl_placeItems(this);
+	lvl_placeActors(this);
 
 	//deallocate the temp arrays now that everything is built
 	free(rooms);
@@ -179,12 +182,14 @@ void lvl_build(Level* self) {
 	numRooms = 0;
 	numHalls = 0;
 
-	size_t numCycles = profile_stop();
-	mgba_printf(LOG_INFO, "level generated in %u cycles", numCycles);
+	DEBUG_BLOCK(
+		size_t numCycles = profile_stop();
+		mgba_printf(LOG_INFO, "level generated in %u cycles", numCycles);
+	);
 }
 
 //recursively divides an initial surface using BSP and queues up rooms and hallways to be carved later
-static inline void lvl_design(Level* self, RECT* rect, size_t numIterations) {
+static inline void lvl_design(Level* this, RECT* rect, size_t numIterations) {
 	
 	//recursive case: if we are not on the last iteration
 	if(numIterations > 0) {
@@ -194,8 +199,8 @@ static inline void lvl_design(Level* self, RECT* rect, size_t numIterations) {
 		lvl_splitRect(rect, &r1, &r2,SPLIT_ATTEMPTS);
 
 		//recurse with the two pieces
-		lvl_design(self, &r1, numIterations - 1);
-		lvl_design(self, &r2, numIterations - 1);
+		lvl_design(this, &r1, numIterations - 1);
+		lvl_design(this, &r2, numIterations - 1);
 
 		//calculate the hallway which will connect the two halves
 		Hall hall = {
@@ -250,7 +255,7 @@ static inline void lvl_tweakRooms(void) {
 }
 
 //iterates over the room array and plots each room's tiles to the level
-static inline void lvl_buildRooms(Level* self) {
+static inline void lvl_buildRooms(Level* this) {
 	
 	//for every room in the temp array
 	for(size_t i = 0; i < numRooms; i++) {
@@ -258,25 +263,25 @@ static inline void lvl_buildRooms(Level* self) {
 		//place floor tiles
 		for(size_t y = rooms[i].bounds.top + 1; y < rooms[i].bounds.bottom - 1; y++) {
 		for(size_t x = rooms[i].bounds.left + 1; x < rooms[i].bounds.right - 1; x++) {
-			lvl_setTile(self, x, y, TILE_FLOOR_ROOM);
+			lvl_setTile(this, x, y, TILE_FLOOR_ROOM);
 		}}
 
 		//place north and south wall tiles
 		for(size_t x = rooms[i].bounds.left; x < rooms[i].bounds.right; x++) {
-			lvl_setTile(self, x, rooms[i].bounds.top, TILE_WALL);
-			lvl_setTile(self, x, rooms[i].bounds.bottom - 1, TILE_WALL);
+			lvl_setTile(this, x, rooms[i].bounds.top, TILE_WALL);
+			lvl_setTile(this, x, rooms[i].bounds.bottom - 1, TILE_WALL);
 		}
 
 		//place west and east wall tiles
 		for(size_t y = rooms[i].bounds.top + 1; y < rooms[i].bounds.bottom - 1; y++) {
-			lvl_setTile(self, rooms[i].bounds.left, y, TILE_WALL);
-			lvl_setTile(self, rooms[i].bounds.right - 1, y, TILE_WALL);
+			lvl_setTile(this, rooms[i].bounds.left, y, TILE_WALL);
+			lvl_setTile(this, rooms[i].bounds.right - 1, y, TILE_WALL);
 		}
 	}
 }
 
 //iterates over the hall array and plots each one's tiles to the level
-static inline void lvl_buildHalls(Level* self) {
+static inline void lvl_buildHalls(Level* this) {
 
 	//for every hall in the temp array
 	for(size_t i = 0; i < numHalls; i++) {
@@ -285,41 +290,43 @@ static inline void lvl_buildHalls(Level* self) {
 		if(halls[i].start.x == halls[i].end.x) {
 			for(size_t y = halls[i].start.y; y < halls[i].end.y; y++) {
 				//left wall
-				if(lvl_getTile(self, halls[i].start.x - 1, y) == TILE_NONE)
-					lvl_setTile(self, halls[i].start.x - 1, y, TILE_WALL);
+				if(lvl_getTile(this, halls[i].start.x - 1, y) == TILE_NONE)
+					lvl_setTile(this, halls[i].start.x - 1, y, TILE_WALL);
 
 				//floor (middle)
-				if(lvl_getTile(self, halls[i].start.x, y) != TILE_FLOOR_ROOM)
-					lvl_setTile(self, halls[i].start.x, y, TILE_FLOOR_HALL);
+				if(lvl_getTile(this, halls[i].start.x, y) != TILE_FLOOR_ROOM)
+					lvl_setTile(this, halls[i].start.x, y, TILE_FLOOR_HALL);
 	
 				//right wall
-				if(lvl_getTile(self, halls[i].start.x + 1, y) == TILE_NONE)
-					lvl_setTile(self, halls[i].start.x + 1, y, TILE_WALL);
+				if(lvl_getTile(this, halls[i].start.x + 1, y) == TILE_NONE)
+					lvl_setTile(this, halls[i].start.x + 1, y, TILE_WALL);
 			}
 		}
 		//horizontal hallway
 		else if(halls[i].start.y == halls[i].end.y){
 			for(size_t x = halls[i].start.x; x < halls[i].end.x; x++) {
 				//top wall
-				if(lvl_getTile(self, x, halls[i].start.y - 1) == TILE_NONE)
-					lvl_setTile(self, x, halls[i].start.y - 1, TILE_WALL);
+				if(lvl_getTile(this, x, halls[i].start.y - 1) == TILE_NONE)
+					lvl_setTile(this, x, halls[i].start.y - 1, TILE_WALL);
 
 				//floor (middle)
-				if(lvl_getTile(self, x, halls[i].start.y) != TILE_FLOOR_ROOM)
-					lvl_setTile(self, x, halls[i].start.y, TILE_FLOOR_HALL);
+				if(lvl_getTile(this, x, halls[i].start.y) != TILE_FLOOR_ROOM)
+					lvl_setTile(this, x, halls[i].start.y, TILE_FLOOR_HALL);
 	
 				//bottom wall
-				if(lvl_getTile(self, x, halls[i].start.y + 1) == TILE_NONE)
-					lvl_setTile(self, x, halls[i].start.y + 1, TILE_WALL);
+				if(lvl_getTile(this, x, halls[i].start.y + 1) == TILE_NONE)
+					lvl_setTile(this, x, halls[i].start.y + 1, TILE_WALL);
 			}
 		}
-		else
-			mgba_printf(LOG_ERR, "diagonal hallways are not supported");
+		DEBUG_BLOCK(
+			else
+				mgba_printf(LOG_ERR, "diagonal hallways are not supported");
+		);
 	}
 }
 
 //iterates over the hall array and 
-static inline void lvl_placeDoors(Level* self) {
+static inline void lvl_placeDoors(Level* this) {
 
 	//for every hall in the temp array
 	for(size_t i = 0; i < numHalls; i++) {
@@ -330,10 +337,10 @@ static inline void lvl_placeDoors(Level* self) {
 			//for every tile in the hallway, from top to bottom
 			for(size_t y = halls[i].start.y; y < halls[i].end.y; y++) {
 				//if there is a wall to the left and right
-				if((lvl_getTile(self, halls[i].start.x - 1, y) == TILE_WALL)
-				&& (lvl_getTile(self, halls[i].start.x + 1, y) == TILE_WALL)) {
+				if((lvl_getTile(this, halls[i].start.x - 1, y) == TILE_WALL)
+				&& (lvl_getTile(this, halls[i].start.x + 1, y) == TILE_WALL)) {
 					//place a door and abort the loop
-					lvl_setTile(self, halls[i].start.x, y, TILE_DOOR_CLOSED);
+					lvl_setTile(this, halls[i].start.x, y, TILE_DOOR_CLOSED);
 					break;
 				}
 			}
@@ -344,27 +351,29 @@ static inline void lvl_placeDoors(Level* self) {
 			//for every tile in the hallway, from left to right
 			for(size_t x = halls[i].start.x; x < halls[i].end.x; x++) {
 				//if there is a wall above and below
-				if((lvl_getTile(self, x, halls[i].start.y - 1) == TILE_WALL)
-				&& (lvl_getTile(self, x, halls[i].start.y + 1) == TILE_WALL)) {
+				if((lvl_getTile(this, x, halls[i].start.y - 1) == TILE_WALL)
+				&& (lvl_getTile(this, x, halls[i].start.y + 1) == TILE_WALL)) {
 					//place a door and abort the loop
-					lvl_setTile(self, x, halls[i].start.y, TILE_DOOR_CLOSED);
+					lvl_setTile(this, x, halls[i].start.y, TILE_DOOR_CLOSED);
 					break;
 				}
 			}
 		}
-		else
-			mgba_printf(LOG_ERR, "diagonal hallways are not supported");
+		DEBUG_BLOCK(
+			else
+				mgba_printf(LOG_ERR, "diagonal hallways are not supported");
+		);
 	}
 }
 
 //iterates over the room array and places items in accordance with the loot tables
-static void lvl_placeItems(Level* self) {
+static void lvl_placeItems(Level* this) {
 	//TODO:
 }
 
 //iterates over the room array and places enemies where the conditions are right
 //NOTE: this will need significant reworking after the jam
-static void lvl_placeActors(Level* self) {
+static void lvl_placeActors(Level* this) {
 		
 	#define SPAWN_CHANCE 153 //60%
 	u32 numActors = 0;
@@ -376,9 +385,9 @@ static void lvl_placeActors(Level* self) {
 				spawnX = qran_range(rooms[i].bounds.left, rooms[i].bounds.right + 1);
 				spawnY = qran_range(rooms[i].bounds.top, rooms[i].bounds.bottom + 1);
 			}
-			while(lvl_getTile(self, spawnX, spawnY) != TILE_FLOOR_ROOM);
+			while(lvl_getTile(this, spawnX, spawnY) != TILE_FLOOR_ROOM);
 
-			lvl_createActor(self, ACTOR_SKELETON, spawnX, spawnY);
+			lvl_createActor(this, ACTOR_SKELETON, spawnX, spawnY);
 		}
 	}
 
@@ -422,6 +431,10 @@ static inline void lvl_splitRect(const RECT* original, RECT* p1, RECT* p2, size_
 
 		//if neither ratio is too small, return
 		if((p1Ratio > DISCARD_RATIO) && (p2Ratio > DISCARD_RATIO))
-			break;
+			return;
 	}
+
+	DEBUG_BLOCK(
+		mgba_printf(LOG_WARN, "failed to satisfy split ratio: too many attempts made");
+	);
 }

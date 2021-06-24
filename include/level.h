@@ -5,6 +5,7 @@
 #define LEVEL_H
 
 #include "actor.h"
+#include "common.h"
 
 //=============================================================================
 // TYPE DEFINITIONS
@@ -86,15 +87,15 @@ typedef struct Hall {
 //=============================================================================
 
 extern Level* lvl_create(void);
-extern void lvl_destroy(Level* self);
+extern void lvl_destroy(Level* this);
 
-extern Actor* lvl_createActor(Level* self, ActorType type, u32 x, u32 y);
-extern void lvl_destroyActor(Level* self, Actor* actor);
+extern Actor* lvl_createActor(Level* this, ActorType type, u32 x, u32 y);
+extern void lvl_destroyActor(Level* this, Actor* actor);
 
-extern void lvl_scroll(Level* self);
-extern void lvl_draw(const Level* self);
+extern void lvl_scroll(Level* this);
+extern void lvl_draw(const Level* this);
 
-extern void lvl_build(Level* self);
+extern void lvl_build(Level* this);
 extern void lvl_erase(void);
 
 //=============================================================================
@@ -102,23 +103,23 @@ extern void lvl_erase(void);
 //=============================================================================
 
 //returns a visual tile from the level
-static inline TileType lvl_getTile(const Level* self, u32 x, u32 y) {
-	return self->tiles[x + y * LVL_WIDTH];
+static inline TileType lvl_getTile(const Level* this, u32 x, u32 y) {
+	return this->tiles[x + y * LVL_WIDTH];
 }
 
 //sets a visual tile in the level
-static inline void lvl_setTile(Level* self, u32 x, u32 y, TileType tile) {
-	self->tiles[x + y * LVL_WIDTH] = tile;
+static inline void lvl_setTile(Level* this, u32 x, u32 y, TileType tile) {
+	this->tiles[x + y * LVL_WIDTH] = tile;
 }
 
 //gets a collision tile from the level
-static inline TerrainType lvl_getTerrain(const Level* self, u32 x, u32 y) {
-	return self->terrain[x + y * LVL_WIDTH];
+static inline TerrainType lvl_getTerrain(const Level* this, u32 x, u32 y) {
+	return this->terrain[x + y * LVL_WIDTH];
 }
 
 //sets a collision tile in the level
-static inline void lvl_setTerrain(Level* self, u32 x, u32 y, TerrainType terrain) {
-	self->terrain[x + y * LVL_WIDTH] = terrain;
+static inline void lvl_setTerrain(Level* this, u32 x, u32 y, TerrainType terrain) {
+	this->terrain[x + y * LVL_WIDTH] = terrain;
 }
 
 #endif //ACTOR_H

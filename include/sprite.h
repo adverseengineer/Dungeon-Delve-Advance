@@ -9,6 +9,7 @@
 #include <tonc.h>
 
 #include "config.h"
+#include "common.h"
 
 //=============================================================================
 // DEFINES
@@ -37,95 +38,95 @@ extern void spr_init(void);
 extern void spr_render(void);
 
 extern Sprite* spr_create(s32 x, s32 y, ObjTile tid, ObjPrio prio);
-extern void spr_destroy(Sprite* self);
+extern void spr_destroy(Sprite* this);
 
 //=============================================================================
 // INLINES
 //=============================================================================
 
-static void spr_setX(Sprite* self, s32 x);
-static void spr_setY(Sprite* self, s32 x);
-static void spr_setPos(Sprite* self, s32 x, s32 y);
-static void spr_move(Sprite* self, s32 dx, s32 dy);
+static void spr_setX(Sprite* this, s32 x);
+static void spr_setY(Sprite* this, s32 x);
+static void spr_setPos(Sprite* this, s32 x, s32 y);
+static void spr_move(Sprite* this, s32 dx, s32 dy);
 
-static void spr_flipHorz(Sprite* self);
-static void spr_flipVert(Sprite* self);
+static void spr_flipHorz(Sprite* this);
+static void spr_flipVert(Sprite* this);
 
-static void spr_hide(Sprite* self);
-static void spr_unhide(Sprite* self);
-static void spr_autoHide(Sprite* self);
-static BOOL spr_isOnScreen(const Sprite* self);
+static void spr_hide(Sprite* this);
+static void spr_unhide(Sprite* this);
+static void spr_autoHide(Sprite* this);
+static BOOL spr_isOnScreen(const Sprite* this);
 
 //sets a sprite's x coord
-static inline void spr_setX(Sprite* self, s32 x) {
-	BFN_SET(self->obj.attr1, x, ATTR1_X);
-	self->pos.x = x;
-	spr_autoHide(self);
-	self->needsRedraw = TRUE;
+static inline void spr_setX(Sprite* this, s32 x) {
+	BFN_SET(this->obj.attr1, x, ATTR1_X);
+	this->pos.x = x;
+	spr_autoHide(this);
+	this->needsRedraw = TRUE;
 }
 
 //sets a sprite's y coord
-static inline void spr_setY(Sprite* self, s32 y){
-	BFN_SET(self->obj.attr0, y, ATTR0_Y);
-	self->pos.y = y;
-	spr_autoHide(self);
-	self->needsRedraw = TRUE;
+static inline void spr_setY(Sprite* this, s32 y){
+	BFN_SET(this->obj.attr0, y, ATTR0_Y);
+	this->pos.y = y;
+	spr_autoHide(this);
+	this->needsRedraw = TRUE;
 }
 
 //moves the given sprite to the given coords
-static inline void spr_setPos(Sprite* self, s32 x, s32 y) {
-	spr_setX(self, x);
-	spr_setY(self, y);
+static inline void spr_setPos(Sprite* this, s32 x, s32 y) {
+	spr_setX(this, x);
+	spr_setY(this, y);
 }
 
 //moves the given sprite relative to it's current position
-static inline void spr_move(Sprite* self, s32 dx, s32 dy) {
-	spr_setX(self, self->pos.x + dx);
-	spr_setY(self, self->pos.y + dy);
+static inline void spr_move(Sprite* this, s32 dx, s32 dy) {
+	spr_setX(this, this->pos.x + dx);
+	spr_setY(this, this->pos.y + dy);
 }
 
 //flips a sprite horizontally
-static inline void spr_flipHorz(Sprite* self) {
-	self->obj.attr1 ^= ATTR1_HFLIP;
-	self->needsRedraw = TRUE;
+static inline void spr_flipHorz(Sprite* this) {
+	this->obj.attr1 ^= ATTR1_HFLIP;
+	this->needsRedraw = TRUE;
 }
 
 //flips a sprite vertically
-static inline void spr_flipVert(Sprite* self) {
-	self->obj.attr1 ^= ATTR1_VFLIP;
-	self->needsRedraw = TRUE;
+static inline void spr_flipVert(Sprite* this) {
+	this->obj.attr1 ^= ATTR1_VFLIP;
+	this->needsRedraw = TRUE;
 }
 
 //hides a sprite's object
-static inline void spr_hide(Sprite* self) {
-	obj_hide(&self->obj);
-	self->needsRedraw = TRUE;
+static inline void spr_hide(Sprite* this) {
+	obj_hide(&this->obj);
+	this->needsRedraw = TRUE;
 }
 
 //unhides a sprite's object
-static inline void spr_unhide(Sprite* self) {
-	obj_unhide(&self->obj, 0); //TODO: what is the second param supposed to mean???
-	self->needsRedraw = TRUE;
+static inline void spr_unhide(Sprite* this) {
+	obj_unhide(&this->obj, 0); //TODO: what is the second param supposed to mean???
+	this->needsRedraw = TRUE;
 }
 
 //handles the logic for when a sprite should be hidden to avoid coord wrapping
 //TODO: find a better name for this function
-static inline void spr_autoHide(Sprite* self) {
+static inline void spr_autoHide(Sprite* this) {
 	//if the sprite just moved onto the screen
-	if(!self->wasOnScreen && spr_isOnScreen(self))
-		spr_unhide(self);
+	if(!this->wasOnScreen && spr_isOnScreen(this))
+		spr_unhide(this);
 	//if the sprite just moved off the screen
-	else if(self->wasOnScreen && !spr_isOnScreen(self))
-		spr_hide(self);
+	else if(this->wasOnScreen && !spr_isOnScreen(this))
+		spr_hide(this);
 
-	self->wasOnScreen = spr_isOnScreen(self);
+	this->wasOnScreen = spr_isOnScreen(this);
 }
 
 //TODO: replace 16 with the width or height of the sprite
 //returns true if any part of the sprite is within the screen rect
-static inline BOOL spr_isOnScreen(const Sprite* self) {
-	return in_range(self->pos.x, -16, SCREEN_WIDTH)
-		&& in_range(self->pos.y, -16, SCREEN_HEIGHT);
+static inline BOOL spr_isOnScreen(const Sprite* this) {
+	return in_range(this->pos.x, -16, SCREEN_WIDTH)
+		&& in_range(this->pos.y, -16, SCREEN_HEIGHT);
 }
 
 #endif //SPRITE_H

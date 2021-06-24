@@ -7,6 +7,7 @@
 //GLOBALS
 //=============================================================================
 
+//NOTE: sprites are stored contiguously, by value, not by pointer
 EWRAM_DATA static Sprite sprites[MAX_SPRITES];
 
 //=============================================================================
@@ -23,7 +24,10 @@ void spr_init(void) {
 	}
 
 	oam_init(oam_mem, MAX_SPRITES);
-	mgba_printf(LOG_INFO, "sprite list was successfully initialized");
+	
+	DEBUG_BLOCK(
+		mgba_printf(LOG_INFO, "sprite list was successfully initialized");
+	);
 }
 
 //renders all sprites in the list
@@ -44,24 +48,26 @@ Sprite* spr_create(s32 x, s32 y, ObjTile tid, ObjPrio prio) {
 		if(sprites[i].isAvailable) {
 			
 			//claim the slot
-			Sprite* self = &sprites[i];
-			self->isAvailable = FALSE;
-			self->needsRedraw = TRUE;
+			Sprite* this = &sprites[i];
+			this->isAvailable = FALSE;
+			this->needsRedraw = TRUE;
 			
 			//set up the sprite
-			obj_set_attr(&self->obj, ATTR0_SQUARE, ATTR1_SIZE_16, ATTR2_BUILD(tid, 0, prio));
-			spr_setPos(self, x, y);
+			obj_set_attr(&this->obj, ATTR0_SQUARE, ATTR1_SIZE_16, ATTR2_BUILD(tid, 0, prio));
+			spr_setPos(this, x, y);
 			
-			return self;
+			return this;
 		}
 	}
-	//if no slot was available,
-	mgba_printf(LOG_ERR, "failed to create sprite: no sprite slots available");
+	//if no slot was available
+	DEBUG_BLOCK(
+		mgba_printf(LOG_ERR, "failed to create sprite: no sprite slots available");
+	);
 	return NULL;
 }
 
 //relinquishes a sprite slot
-void spr_destroy(Sprite* self) {
-	self->isAvailable = TRUE;
-	obj_hide(&self->obj);
+void spr_destroy(Sprite* this) {
+	this->isAvailable = TRUE;
+	obj_hide(&this->obj);
 }

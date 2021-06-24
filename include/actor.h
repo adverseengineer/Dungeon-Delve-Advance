@@ -59,12 +59,12 @@ struct Actor {
 	Sprite* sprite; //the on-screen representation of this actor
 
 	//"methods"
-	void (*move) (Actor* self);
-	void (*attack) (Actor* self, Actor* other);
-	void (*chase) (Actor* self, Actor* other);
-	void (*flee) (Actor* self, Actor* other);
-	void (*idle) (Actor* self);
-	void (*die) (Actor* self);	
+	void (*move) (Actor* this);
+	void (*attack) (Actor* this, Actor* other);
+	void (*chase) (Actor* this, Actor* other);
+	void (*flee) (Actor* this, Actor* other);
+	void (*idle) (Actor* this);
+	void (*die) (Actor* this);	
 };
 
 //=============================================================================
@@ -72,8 +72,8 @@ struct Actor {
 //=============================================================================
 
 Actor* actor_create(ActorType type);
-void actor_destroy(Actor* self);
+void actor_destroy(Actor* this);
 
-void actor_setPos(Actor* self, Level* lvl, s32 x, s32 y);
+void actor_setPos(Actor* this, Level* lvl, s32 x, s32 y);
 
 #endif //ACTOR_H

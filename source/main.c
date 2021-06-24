@@ -7,6 +7,8 @@
 #include "level.h"
 #include "ui.h"
 
+#include "player.h"
+
 //gfx
 #include "gfx_lvl.h"
 #include "gfx_ui.h"
@@ -14,8 +16,6 @@
 #include "gfx_player_warrior.h"
 #include "gfx_player_mage.h"
 #include "gfx_skeleton.h"
-
-#include "util.h"
 
 static inline void vid_init(void) {
 
@@ -55,9 +55,9 @@ int main(void) {
 
 	vid_init();
 
+	Player* plr = plr_create();
 	Level* lvl = lvl_create();
-
-	Actor* atr = lvl_createActor(lvl, ACTOR_SKELETON, 4, 7);
+	lvl->player = plr;
 
 	lvl_build(lvl);
 	lvl_draw(lvl);
